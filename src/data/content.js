@@ -17,8 +17,8 @@ export const siteConfig = {
     defaultMessage: "Hola Belén! Vi la web de BC Informática y quería hacerte una consulta.",
   },
   github: {
-    user: "bcinformaticapna",
-    url: "https://github.com/bcinformaticapna",
+    user: "BelenCascone",
+    url: "https://github.com/BelenCascone",
   }
 };
 

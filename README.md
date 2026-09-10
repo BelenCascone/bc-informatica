@@ -29,7 +29,7 @@ Desarrollado por **Belén Cascone** (Analista en Sistemas).
 
 ```bash
 # 1. Clonar repositorio
-git clone https://github.com/bcinformaticapna/<nombre-repositorio>.git
+git clone https://github.com/BelenCascone/bc-informatica.git
 
 # 2. Entrar en la carpeta
 cd "BC INFORMATICA"
