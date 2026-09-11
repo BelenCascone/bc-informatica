@@ -1,27 +1,950 @@
 <!doctype html>
-<html lang="es" class="scroll-smooth">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="./assets/Image 1.jpeg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0a0d0b" />
-    <title>&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas para tu casa y tu empresa</title>
-    <meta name="description" content="Detrás de BC Informática hay una persona, no un call center. Arreglo, enseño, asesoro y desarrollo sistemas a medida. Paraná, Entre Ríos y a distancia." />
-    <meta name="keywords" content="BC Informática, Belén Analista en Sistemas, Service técnico Paraná, Reparación PC Paraná, Sistemas a medida, Clases computación Paraná, Asesoramiento informático" />
-    
-    <!-- Open Graph / Redes -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas" />
-    <meta property="og:description" content="Soluciones informáticas para tu casa y tu empresa. Sin vueltas y en tu idioma. Paraná · Entre Ríos." />
-    <meta property="og:image" content="./assets/Image 1.jpeg" />
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas para tu casa y tu empresa</title>
+<meta name="description" content="Detrás de BC Informática hay una persona, no un call center. Arreglo, enseño, asesoro y desarrollo sistemas a medida. Paraná, Entre Ríos y a distancia.">
+<meta name="keywords" content="BC Informática, Belén Analista en Sistemas, Service técnico Paraná, Reparación PC Paraná, Sistemas a medida, Clases computación Paraná, Asesoramiento informático">
+<meta name="theme-color" content="#121412">
+<link rel="icon" type="image/jpeg" href="./assets/Image 1.jpeg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas">
+<meta property="og:description" content="Soluciones informáticas para tu casa y tu empresa. Sin vueltas y en tu idioma. Paraná · Entre Ríos.">
+<meta property="og:image" content="./assets/Image 1.jpeg">
+<meta property="og:locale" content="es_AR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>*{box-sizing:border-box}html{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap">
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-brand-dark text-gray-200 antialiased selection:bg-brand-lime selection:text-black min-h-screen">
-    <div id="root"></div>
-    <script type="module" src="./src/main.jsx"></script>
-  </body>
+<style>
+/* ============ TOKENS — Dev Blueprint ============ */
+:root{
+  --ground:#121412;
+  --ground-deep:#0d0f0d;
+  --surface:#1A1D1A;
+  --surface-2:#232823;
+  --lime:#C6FF00;
+  --lime-dim:#a6d700;
+  --circuit:#1B4332;
+  --cream:#FBF8E6;
+  --muted:#8F9E8B;
+  --hair:rgba(198,255,0,.14);
+  --hair-soft:rgba(143,158,139,.18);
+  --glow:0 0 20px rgba(198,255,0,.22);
+
+  --f-display:'Space Grotesk','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono','SFMono-Regular',ui-monospace,monospace;
+  --f-body:'Inter','Segoe UI',system-ui,sans-serif;
+
+  --topbar:60px;
+  --maxw:1120px;
+  --r:4px;
+  --r-lg:8px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--cream);
+  font-family:var(--f-body);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* blueprint grid ground */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(198,255,0,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(198,255,0,.045) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 20%,transparent 78%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 20%,transparent 78%);
+}
+body::after{
+  content:"";
+  position:fixed; z-index:0; pointer-events:none;
+  top:-30vh; left:50%; width:80vw; height:70vh; transform:translateX(-50%);
+  background:radial-gradient(closest-side,rgba(198,255,0,.09),transparent 70%);
+  filter:blur(20px);
+}
+
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:2px}
+
+/* ============ TYPE ============ */
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.1rem,6vw,3.5rem);line-height:1.04}
+h2{font-size:clamp(1.55rem,3.6vw,2.25rem);line-height:1.1}
+h3{font-size:1.06rem;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+p{margin:0;max-width:62ch}
+
+.tag{
+  font-family:var(--f-mono);font-size:11.5px;font-weight:600;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--lime);
+  display:inline-block;
+}
+.tag--muted{color:var(--muted)}
+.lead{font-size:clamp(1rem,2.1vw,1.16rem);color:#d8dcd2;line-height:1.65}
+.dim{color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+
+/* ============ TOP BAR ============ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:50;height:var(--topbar);
+  display:flex;align-items:center;gap:16px;
+  padding:0 clamp(16px,4vw,32px);
+  background:rgba(13,15,13,.86);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--hair-soft);
+}
+.brand{display:flex;align-items:center;gap:10px;flex:none}
+.iso{
+  font-family:var(--f-mono);font-weight:700;font-size:17px;letter-spacing:-.02em;
+  color:var(--lime);white-space:nowrap;
+}
+.iso .thin{color:var(--lime);opacity:.55;font-weight:400}
+.brand-name{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;
+  color:var(--muted);text-transform:uppercase;
+}
+@media (max-width:520px){.brand-name{display:none}}
+
+.tabs{display:flex;gap:2px;margin-left:auto;align-items:stretch;height:100%}
+.tab{
+  display:flex;align-items:center;padding:0 14px;
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.02em;
+  color:var(--muted);border-bottom:2px solid transparent;
+  transition:color .18s ease,background .18s ease,border-color .18s ease;
+  white-space:nowrap;
+}
+.tab:hover{color:var(--cream);background:rgba(198,255,0,.05)}
+.tab[aria-current="page"]{color:var(--lime);border-bottom-color:var(--lime);background:rgba(198,255,0,.06)}
+.tab .ext{opacity:.45}
+
+.burger{
+  display:none;margin-left:auto;background:none;border:1px solid var(--hair);
+  color:var(--lime);border-radius:var(--r);padding:8px 12px;
+  font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;cursor:pointer;
+}
+@media (max-width:860px){
+  .tabs{display:none}
+  .burger{display:block}
+  .tabs.is-open{
+    display:flex;flex-direction:column;position:fixed;
+    top:var(--topbar);left:0;right:0;height:auto;
+    background:var(--ground-deep);border-bottom:1px solid var(--hair);
+    padding:8px 0 14px;gap:0;
+    animation:drop .22s cubic-bezier(.2,.7,.3,1);
+  }
+  .tabs.is-open .tab{
+    padding:14px clamp(16px,4vw,32px);font-size:14px;
+    border-bottom:1px solid var(--hair-soft);border-left:2px solid transparent;
+  }
+  .tabs.is-open .tab[aria-current="page"]{border-left-color:var(--lime);border-bottom-color:var(--hair-soft)}
+}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ============ SHELL ============ */
+.shell{
+  position:relative;z-index:1;
+  max-width:var(--maxw);margin:0 auto;
+  padding-inline:clamp(16px,4vw,32px);
+  padding-block:calc(var(--topbar) + 34px) 0;
+}
+
+.crumb{
+  font-family:var(--f-mono);font-size:11.5px;color:var(--muted);
+  letter-spacing:.04em;display:flex;align-items:center;gap:8px;margin-bottom:22px;
+}
+.crumb .dot{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:var(--glow);flex:none}
+
+/* ============ VIEWS + ROUTE ANIMATION ============ */
+.view{display:none}
+.view.is-active{display:block}
+.view.is-active > *{animation:rise .5s cubic-bezier(.2,.7,.3,1) backwards}
+.view.is-active > *:nth-child(1){animation-delay:.02s}
+.view.is-active > *:nth-child(2){animation-delay:.08s}
+.view.is-active > *:nth-child(3){animation-delay:.14s}
+.view.is-active > *:nth-child(4){animation-delay:.2s}
+.view.is-active > *:nth-child(5){animation-delay:.26s}
+.view.is-active > *:nth-child(6){animation-delay:.3s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* scanline sweep on route change */
+.sweep{
+  position:fixed;left:0;right:0;top:var(--topbar);height:2px;z-index:40;
+  background:linear-gradient(90deg,transparent,var(--lime),transparent);
+  opacity:0;pointer-events:none;
+}
+.sweep.run{animation:sweep .55s ease-out}
+@keyframes sweep{
+  0%{opacity:0;transform:translateX(-60%) scaleX(.4)}
+  35%{opacity:1}
+  100%{opacity:0;transform:translateX(60%) scaleX(1)}
+}
+
+/* ============ HERO ============ */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,52px);align-items:center;padding-block:clamp(8px,2vw,28px) clamp(40px,6vw,64px)}
+@media (max-width:860px){.hero{grid-template-columns:1fr;gap:32px}}
+.hero h1{margin-block:14px 18px}
+.hero h1 em{font-style:normal;color:var(--lime)}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+
+/* terminal window */
+.term{
+  background:var(--surface);border:1px solid var(--circuit);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.term-head{
+  height:34px;display:flex;align-items:center;gap:7px;padding:0 12px;
+  border-bottom:1px solid rgba(143,158,139,.16);background:rgba(255,255,255,.015);
+}
+.term-head i{width:9px;height:9px;border-radius:50%;flex:none;display:block}
+.term-head i:nth-child(1){background:var(--lime)}
+.term-head i:nth-child(2){background:var(--circuit)}
+.term-head i:nth-child(3){background:#333533}
+.term-head span{
+  margin-left:auto;margin-right:auto;padding-right:32px;
+  font-family:var(--f-mono);font-size:11px;color:var(--muted);
+}
+.term-body{
+  padding:16px 16px 20px;font-family:var(--f-mono);font-size:12.6px;line-height:1.85;
+  min-height:238px;
+}
+.term-body .ln{color:#5f6b5c;user-select:none;display:inline-block;width:22px}
+.prompt{color:var(--lime)}
+.str{color:var(--cream)}
+.cmt{color:#6f7d6c}
+.key{color:var(--lime-dim)}
+.caret{
+  display:inline-block;width:8px;height:15px;background:var(--lime);
+  vertical-align:-2px;margin-left:2px;animation:blink 1.05s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.term-out{opacity:0}
+.term-out.on{animation:rise .45s cubic-bezier(.2,.7,.3,1) forwards}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--f-mono);font-size:12.5px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;padding:13px 20px;border-radius:var(--r);
+  border:1px solid transparent;cursor:pointer;transition:transform .16s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease;
+}
+.btn--primary{background:var(--lime);color:#121412;box-shadow:0 0 0 rgba(198,255,0,0)}
+.btn--primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(198,255,0,.28)}
+.btn--ghost{background:transparent;color:var(--cream);border-color:var(--circuit)}
+.btn--ghost:hover{border-color:var(--lime);color:var(--lime);transform:translateY(-2px)}
+.btn .arw{transition:transform .18s ease}
+.btn:hover .arw{transform:translateX(3px)}
+
+/* ============ GRID + CARDS ============ */
+.grid{display:grid;gap:16px}
+.grid--2{grid-template-columns:repeat(2,1fr)}
+.grid--3{grid-template-columns:repeat(3,1fr)}
+.grid--4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:900px){.grid--3,.grid--4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:620px){.grid--2,.grid--3,.grid--4{grid-template-columns:1fr}}
+
+.card{
+  background:var(--surface);border:1px solid rgba(143,158,139,.16);border-radius:var(--r-lg);
+  padding:22px;display:flex;flex-direction:column;gap:11px;
+  transition:border-color .22s ease,transform .22s ease,box-shadow .22s ease;
+}
+.card:hover{border-color:rgba(198,255,0,.42);transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.42)}
+.card h3{color:var(--cream)}
+.card p{font-size:14.2px;color:#c5ccbf}
+.card ul{margin:2px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.card li{
+  font-size:13.4px;color:#c5ccbf;padding-left:17px;position:relative;line-height:1.5;
+}
+.card li::before{
+  content:"›";position:absolute;left:0;top:-1px;color:var(--lime);
+  font-family:var(--f-mono);font-weight:700;
+}
+.card .foot{margin-top:auto;padding-top:14px}
+
+.chip{
+  display:inline-flex;align-items:center;
+  font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--lime);
+  background:rgba(27,67,50,.4);border:1px solid rgba(198,255,0,.4);
+  border-radius:var(--r);padding:5px 9px;width:fit-content;
+}
+.chip--muted{color:var(--muted);border-color:var(--hair-soft);background:rgba(255,255,255,.02)}
+
+/* section rhythm */
+.sec{padding-block:clamp(34px,5vw,54px);border-top:1px solid var(--hair-soft)}
+.sec:first-of-type{border-top:0}
+.sec-head{display:flex;flex-direction:column;gap:10px;margin-bottom:26px}
+
+/* ============ SPEC LIST (sobre mí / cómo trabajo) ============ */
+.spec{display:grid;grid-template-columns:auto 1fr;gap:14px 18px;align-items:baseline}
+.spec dt{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--lime);white-space:nowrap;padding-top:2px;
+}
+.spec dd{margin:0;font-size:14.4px;color:#c5ccbf}
+@media (max-width:560px){.spec{grid-template-columns:1fr;gap:4px 0}.spec dd{margin-bottom:12px}}
+
+/* ============ PRICE ============ */
+.price{
+  display:flex;align-items:baseline;gap:8px;
+  font-family:var(--f-display);font-weight:700;font-size:1.5rem;color:var(--lime);
+  font-variant-numeric:tabular-nums;
+}
+.price small{font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.price--big{font-size:clamp(2rem,5vw,2.7rem);line-height:1;text-shadow:0 0 28px rgba(198,255,0,.25)}
+
+.plan{
+  display:grid;grid-template-columns:1.35fr .65fr;gap:0;
+  background:var(--surface);border:1px solid rgba(198,255,0,.34);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:0 18px 46px rgba(0,0,0,.4);
+}
+.plan-main{padding:26px;display:flex;flex-direction:column;gap:12px}
+.plan-main h3{font-size:1.28rem}
+.plan-main p{font-size:14.4px;color:#c5ccbf}
+.plan-main ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.plan-main li{font-size:13.6px;color:#c5ccbf;padding-left:17px;position:relative;line-height:1.5}
+.plan-main li::before{content:"›";position:absolute;left:0;top:-1px;color:var(--lime);font-family:var(--f-mono);font-weight:700}
+.plan-side{
+  padding:26px;display:flex;flex-direction:column;gap:14px;justify-content:center;
+  background:linear-gradient(160deg,rgba(198,255,0,.09),rgba(27,67,50,.16));
+  border-left:1px solid rgba(198,255,0,.2);
+}
+.plan-side .btn{width:fit-content}
+@media (max-width:760px){
+  .plan{grid-template-columns:1fr}
+  .plan-side{border-left:0;border-top:1px solid rgba(198,255,0,.2)}
+}
+
+/* ============ CONTACT ============ */
+.channels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:760px){.channels{grid-template-columns:1fr}}
+.chan{
+  display:flex;flex-direction:column;gap:6px;padding:20px;
+  background:var(--surface);border:1px solid rgba(143,158,139,.16);border-radius:var(--r-lg);
+  transition:border-color .2s ease,transform .2s ease;
+}
+.chan:hover{border-color:rgba(198,255,0,.45);transform:translateY(-3px)}
+.chan b{font-family:var(--f-display);font-size:1rem;font-weight:600}
+.chan span{font-family:var(--f-mono);font-size:12px;color:var(--muted);word-break:break-all}
+
+form{display:grid;gap:14px;max-width:620px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:620px){.row{grid-template-columns:1fr}}
+label{
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted);display:block;margin-bottom:7px;
+}
+input,select,textarea{
+  width:100%;background:var(--ground-deep);color:var(--cream);
+  border:1px solid rgba(143,158,139,.22);border-radius:var(--r);
+  padding:12px 13px;font-family:var(--f-body);font-size:14.5px;
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+textarea{resize:vertical;min-height:118px;line-height:1.55}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--lime);box-shadow:0 0 0 3px rgba(198,255,0,.12);
+}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--lime) 50%),linear-gradient(135deg,var(--lime) 50%,transparent 50%);background-position:calc(100% - 18px) 20px,calc(100% - 13px) 20px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.hint{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);line-height:1.6}
+
+/* ============ FOOTER / STATUS BAR ============ */
+.statusbar{
+  position:relative;z-index:1;margin-top:clamp(40px,6vw,70px);
+  border-top:1px solid var(--hair-soft);background:rgba(13,15,13,.6);
+}
+.statusbar .inner{
+  max-width:var(--maxw);margin:0 auto;padding:14px clamp(16px,4vw,32px);
+  display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--muted);
+  text-transform:uppercase;
+}
+.statusbar .live{display:flex;align-items:center;gap:7px;color:var(--lime)}
+.statusbar .live i{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:var(--glow);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.statusbar a:hover{color:var(--lime)}
+.statusbar .push{margin-left:auto}
+@media (max-width:620px){.statusbar .push{margin-left:0}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .term-out{opacity:1}
+}
+
+/* ── punchlines (copy propia de la marca) ── */
+.punch{
+  font-family:var(--f-display);font-weight:700;font-size:1rem;letter-spacing:-.01em;
+  color:var(--lime);margin:-2px 0 2px;
+}
+/* ── tira de piezas de marca ── */
+.flyers{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;
+}
+@media (max-width:900px){.flyers{grid-template-columns:repeat(2,1fr)}}
+.flyer{
+  display:block;border:1px solid rgba(143,158,139,.18);border-radius:var(--r-lg);
+  overflow:hidden;background:var(--surface);aspect-ratio:1/1;
+  transition:border-color .22s ease,transform .22s ease;
+}
+.flyer:hover{border-color:rgba(198,255,0,.45);transform:translateY(-3px)}
+.flyer img{width:100%;height:100%;object-fit:cover;display:block}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/inicio" aria-label="BC Informática — inicio">
+    <span class="iso"><span class="thin">&lt;</span>/BC<span class="thin">&gt;</span></span>
+    <span class="brand-name">Informática</span>
+  </a>
+  <button class="burger" id="burger" aria-expanded="false" aria-controls="tabs">MENÚ</button>
+  <nav class="tabs" id="tabs" aria-label="Secciones">
+    <a class="tab" href="#/inicio">inicio<span class="ext">.tsx</span></a>
+    <a class="tab" href="#/servicios">servicios<span class="ext">.ts</span></a>
+    <a class="tab" href="#/proyectos">proyectos<span class="ext">.ts</span></a>
+    <a class="tab" href="#/precios">precios<span class="ext">.json</span></a>
+    <a class="tab" href="#/sobre-mi">sobre-mi<span class="ext">.md</span></a>
+    <a class="tab" href="#/contacto">contacto<span class="ext">.sh</span></a>
+  </nav>
+</header>
+<div class="sweep" id="sweep" aria-hidden="true"></div>
+
+<main class="shell" id="shell">
+  <p class="crumb"><span class="dot"></span><span id="crumb">~/bc-informatica/inicio.tsx</span></p>
+
+  <!-- ══════════ INICIO ══════════ -->
+  <section class="view" id="v-inicio" aria-labelledby="h-inicio">
+    <div class="hero">
+      <div>
+        <span class="tag">// Analista en Sistemas · Paraná, Entre Ríos</span>
+        <h1 id="h-inicio">Tu problema técnico<br>tiene <em>solución</em>.</h1>
+        <p class="lead">Soy Belén. Arreglo computadoras, desarrollo sistemas a medida, doy clases y te asesoro para que la tecnología de tu negocio deje de ser un dolor de cabeza. Sin vueltas y sin vocabulario que no se entiende.</p>
+        <div class="hero-cta">
+          <a class="btn btn--primary" href="#/contacto">Pedir presupuesto <span class="arw">→</span></a>
+          <a class="btn btn--ghost" href="#/servicios">Ver servicios <span class="arw">/&gt;</span></a>
+        </div>
+      </div>
+
+      <div class="term" aria-hidden="true">
+        <div class="term-head"><i></i><i></i><i></i><span>~/bc-informatica/perfil.ts</span></div>
+        <div class="term-body">
+          <div><span class="ln">01</span><span class="prompt">$</span> <span id="typed"></span><span class="caret"></span></div>
+          <div class="term-out" id="out">
+            <div><span class="ln">02</span><span class="key">nombre</span>: <span class="str">"Belén"</span>,</div>
+            <div><span class="ln">03</span><span class="key">título</span>: <span class="str">"Analista en Sistemas"</span>,</div>
+            <div><span class="ln">04</span><span class="key">base</span>: <span class="str">"Paraná, Entre Ríos"</span>,</div>
+            <div><span class="ln">05</span><span class="key">hace</span>: [<span class="str">"service"</span>, <span class="str">"sistemas"</span>,</div>
+            <div><span class="ln">06</span>&nbsp;&nbsp;<span class="str">"clases"</span>, <span class="str">"asesoramiento"</span>],</div>
+            <div><span class="ln">07</span><span class="key">atiende</span>: <span class="str">"presencial y online"</span></div>
+            <div><span class="ln">08</span><span class="cmt">// respondo el mismo día</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Qué hago</span>
+        <h2>Cuatro formas de que te dé una mano</h2>
+      </div>
+      <div class="grid grid--4">
+        <a class="card" href="#/servicios">
+          <span class="chip">// Service</span>
+          <h3>Service técnico</h3>
+          <p>Tu PC o notebook anda lenta, se apaga o no arranca. La diagnostico y te digo qué conviene hacer antes de tocar nada.</p>
+        </a>
+        <a class="card" href="#/servicios">
+          <span class="chip">// Sistemas</span>
+          <h3>Sistemas a medida</h3>
+          <p>Software hecho para cómo trabaja tu negocio, no al revés. Stock, pedidos, clientes, turnos, facturación.</p>
+        </a>
+        <a class="card" href="#/servicios">
+          <span class="chip">// Clases</span>
+          <h3>Clases personalizadas</h3>
+          <p class="punch">Nadie nació sabiendo.</p>
+          <p>Desde usar la compu sin miedo hasta programar. El temario lo armamos según para qué lo necesitás.</p>
+        </a>
+        <a class="card" href="#/servicios">
+          <span class="chip">// Asesoría</span>
+          <h3>Asesoramiento</h3>
+          <p>Qué comprar, cómo respaldar tus datos, cómo usar IA en tu trabajo. Una opinión técnica que no te está vendiendo nada.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="grid grid--3">
+        <div class="card">
+          <span class="tag tag--muted">// 01 · Diagnóstico</span>
+          <h3>Primero entiendo qué pasa</h3>
+          <p>Escucho el problema como lo vivís vos, reviso el equipo o el proceso, y recién ahí armo el presupuesto. El diagnóstico no se cobra.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag--muted">// 02 · Presupuesto</span>
+          <h3>Precio cerrado por escrito</h3>
+          <p>Te paso qué incluye, qué no incluye, cuánto sale y cuánto tarda. Si aparece algo en el camino, te consulto antes de seguir.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag--muted">// 03 · Entrega</span>
+          <h3>Te explico lo que hice</h3>
+          <p>Nada de "ya está listo" y chau. Te muestro qué se cambió, cómo usarlo y qué mirar para que no vuelva a pasar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SERVICIOS ══════════ -->
+  <section class="view" id="v-servicios" aria-labelledby="h-servicios">
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Servicios</span>
+        <h2 id="h-servicios">Qué puedo resolverte</h2>
+        <p class="lead">Trabajo con personas y con negocios chicos de Paraná y alrededores. Presencial en la ciudad, online para todo lo que se pueda hacer a distancia.</p>
+      </div>
+
+      <div class="grid grid--2">
+        <div class="card">
+          <span class="chip">// Hardware</span>
+          <h3>Service técnico y reparación</h3>
+          <p class="punch">¿Anda lenta? Se arregla.</p>
+          <p>PC de escritorio y notebooks. Diagnóstico primero, presupuesto después.</p>
+          <ul>
+            <li>Limpieza interna y cambio de pasta térmica: el equipo deja de calentarse y de apagarse solo.</li>
+            <li>Cambio a disco sólido y ampliación de memoria: la mejora que más se nota y menos cuesta.</li>
+            <li>Formateo, instalación de Windows y de los programas que usás, con tus archivos respaldados.</li>
+            <li>Recuperación de archivos de discos y pendrives que dejaron de leerse.</li>
+            <li>Armado de PC a medida según lo que vas a usar y lo que podés gastar.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="chip">// Desarrollo</span>
+          <h3>Sistemas y apps a medida</h3>
+          <p class="punch">Dejá el Excel eterno.</p>
+          <p>Software pensado para cómo trabaja tu negocio hoy, entregado por etapas.</p>
+          <ul>
+            <li>Gestión de stock, pedidos, clientes, turnos o remitos, con la información donde la necesitás.</li>
+            <li>Migración de esa planilla de Excel que ya no da más a un sistema de verdad.</li>
+            <li>Automatizaciones: lo que hoy cargás dos veces a mano, se carga una sola.</li>
+            <li>Reportes que te dicen cómo viene el mes sin tener que sacar cuentas.</li>
+            <li>Capacitación al equipo y soporte después de la entrega.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="chip">// Clases</span>
+          <h3>Clases personalizadas</h3>
+          <p>Uno a uno o en grupo chico, presencial u online. El temario se arma para vos.</p>
+          <ul>
+            <li>Desde cero: usar la computadora y el celular, mail, archivos, trámites online, seguridad.</li>
+            <li>Excel y planillas de cálculo, desde lo básico hasta fórmulas y tablas dinámicas.</li>
+            <li>Programación para quien empieza o para quien va a rendir una materia.</li>
+            <li>Inteligencia artificial aplicada: cómo usarla de verdad en tu trabajo, no para jugar.</li>
+            <li>Apoyo escolar y universitario en materias de sistemas.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <span class="chip">// Asesoría</span>
+          <h3>Asesoramiento técnico</h3>
+          <p class="punch">Preguntá antes de comprar.</p>
+          <p>Cuando la decisión es cara y no querés depender de lo que te diga el vendedor.</p>
+          <ul>
+            <li>Qué equipo comprar para lo que realmente vas a hacer, sin pagar de más.</li>
+            <li>Backups: dónde están tus datos hoy y qué pasa si mañana no están.</li>
+            <li>Seguridad básica del negocio: contraseñas, accesos, estafas por WhatsApp y mail.</li>
+            <li>Red e internet: por qué anda lento y qué se puede hacer.</li>
+            <li>Qué herramientas de IA sirven para tu rubro y cuáles son humo.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top:26px">
+        <a class="btn btn--primary" href="#/contacto">Contame qué necesitás <span class="arw">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ PROYECTOS ══════════ -->
+  <section class="view" id="v-proyectos" aria-labelledby="h-proyectos">
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Proyectos</span>
+        <h2 id="h-proyectos">En qué estuve trabajando</h2>
+        <p class="lead">Una muestra de trabajos propios y en curso. Si querés ver algo parecido a lo que necesitás, escribime y te lo muestro funcionando.</p>
+      </div>
+
+      <div class="grid grid--3">
+        <article class="card">
+          <span class="chip">// En desarrollo</span>
+          <h3>Sistema de gestión de viandas</h3>
+          <p>Alta de menús, pedidos por cliente, control de entregas y cierre de cuenta. Pensado para un negocio que hoy lleva todo en cuaderno y WhatsApp.</p>
+          <div class="foot"><span class="chip chip--muted">Web · Gestión</span></div>
+        </article>
+
+        <article class="card">
+          <span class="chip">// Terminado</span>
+          <h3>Identidad de marca BC Informática</h3>
+          <p>Sistema de diseño completo: isotipo, paleta, tipografías, plantillas de redes y kit de archivos. Todo lo que ves en esta página sale de ahí.</p>
+          <div class="foot"><span class="chip chip--muted">Branding · Diseño</span></div>
+        </article>
+
+        <article class="card">
+          <span class="chip chip--muted">// Disponible</span>
+          <h3>El próximo puede ser el tuyo</h3>
+          <p>Contame cómo trabajás hoy y qué te está costando más tiempo del que debería. Te digo si tiene solución y cuánto sale, sin compromiso.</p>
+          <div class="foot"><a class="btn btn--ghost" href="#/contacto">Escribime <span class="arw">→</span></a></div>
+        </article>
+      </div>
+
+      <div class="sec-head" style="margin-top:34px;margin-bottom:14px">
+        <span class="tag">// Piezas de marca</span>
+        <h2>Diseño propio, hecho con el mismo sistema</h2>
+        <p class="lead">Las placas que publico en Instagram salen del brand kit de BC Informática. Si tu negocio necesita algo así, también lo hago.</p>
+      </div>
+      <div class="flyers">
+        <a class="flyer" href="./assets/bc-presentacion-01.png" target="_blank" rel="noopener"><img src="./assets/bc-presentacion-01.png" alt="Placa de presentación de BC Informática" loading="lazy" width="1080" height="1080"></a>
+        <a class="flyer" href="./assets/bc-carrusel-03.png" target="_blank" rel="noopener"><img src="./assets/bc-carrusel-03.png" alt="Placa del servicio de service técnico" loading="lazy" width="1080" height="1080"></a>
+        <a class="flyer" href="./assets/bc-carrusel-04.png" target="_blank" rel="noopener"><img src="./assets/bc-carrusel-04.png" alt="Placa del servicio de sistemas a medida" loading="lazy" width="1080" height="1080"></a>
+        <a class="flyer" href="./assets/bc-carrusel-05.png" target="_blank" rel="noopener"><img src="./assets/bc-carrusel-05.png" alt="Placa del servicio de clases personalizadas" loading="lazy" width="1080" height="1080"></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ PRECIOS ══════════ -->
+  <section class="view" id="v-precios" aria-labelledby="h-precios">
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Precios</span>
+        <h2 id="h-precios">Cómo cobro</h2>
+        <p class="lead">Las clases tienen un valor fijo por mes. Todo lo demás depende del trabajo, así que se presupuesta por escrito antes de arrancar: el diagnóstico y el presupuesto no se cobran, y el precio que te paso es el precio final.</p>
+      </div>
+
+      <div class="plan">
+        <div class="plan-main">
+          <span class="chip">// Clases · valor fijo</span>
+          <h3>Clases a domicilio, una por semana</h3>
+          <p>Voy a tu casa una vez por semana, una hora por encuentro, cuatro encuentros al mes. El temario lo armamos juntas según para qué lo necesitás: desde usar la computadora sin miedo hasta Excel, programación o inteligencia artificial aplicada a tu trabajo.</p>
+          <ul>
+            <li>Cuatro clases al mes, de una hora, en tu domicilio en Paraná.</li>
+            <li>Material y ejercicios preparados para vos, no un curso enlatado.</li>
+            <li>Podés escribirme entre clase y clase si te trabás con algo.</li>
+          </ul>
+        </div>
+        <div class="plan-side">
+          <div class="price price--big">$40.000 <small>por mes</small></div>
+          <p class="hint">Una clase por semana · 1 hora · a domicilio en Paraná</p>
+          <a class="btn btn--primary" href="#/contacto">Reservar un lugar <span class="arw">→</span></a>
+        </div>
+      </div>
+
+      <div class="grid grid--3" style="margin-top:16px">
+        <div class="card">
+          <span class="chip">// A presupuestar</span>
+          <h3>Service y reparación</h3>
+          <p>El precio depende de qué tiene el equipo. Lo reviso, te digo qué le pasa y te paso el número antes de tocar nada. Los repuestos van aparte y se confirman con vos antes de comprarlos.</p>
+          <div class="foot"><div class="price">Presupuesto <small>sin cargo</small></div></div>
+        </div>
+        <div class="card">
+          <span class="chip">// A presupuestar</span>
+          <h3>Sistemas a medida</h3>
+          <p>Depende de qué tiene que resolver el sistema y de cuántas etapas lleve. Charlamos cómo trabajás hoy y te paso el plan por escrito, con cada etapa cotizada por separado.</p>
+          <div class="foot"><div class="price">Presupuesto <small>sin cargo</small></div></div>
+        </div>
+        <div class="card">
+          <span class="chip">// A presupuestar</span>
+          <h3>Asesoramiento técnico</h3>
+          <p>Consultas puntuales, elección de equipos, backups o seguridad. Según lo que necesites reviso y te paso el valor antes de empezar.</p>
+          <div class="foot"><div class="price">Presupuesto <small>sin cargo</small></div></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-head">
+          <span class="tag">// Condiciones</span>
+          <h2>Lo que siempre incluye</h2>
+        </div>
+        <dl class="spec">
+          <dt>Diagnóstico</dt><dd>Sin cargo. Reviso el equipo o el proceso y te digo qué le pasa aunque después no me contrates.</dd>
+          <dt>Presupuesto</dt><dd>Por escrito, con el detalle de qué incluye y qué no, antes de empezar el trabajo.</dd>
+          <dt>Repuestos</dt><dd>Se cotizan el día que se compran, porque el precio cambia seguido. Nunca se compra nada sin avisarte.</dd>
+          <dt>Clases</dt><dd>Se abonan por mes. Si una semana no podés, la reprogramamos dentro del mismo mes.</dd>
+          <dt>Cambios</dt><dd>Si en el camino aparece algo que no estaba previsto, te consulto antes de seguir.</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SOBRE MÍ ══════════ -->
+  <section class="view" id="v-sobre-mi" aria-labelledby="h-sobre">
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Sobre mí</span>
+        <h2 id="h-sobre">Belén — Analista en Sistemas</h2>
+      </div>
+
+      <div class="grid grid--2">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <p class="lead">Estudié Análisis de Sistemas y hace años que la informática es a lo que me dedico: tanto el lado del fierro —abrir una máquina, cambiar un disco, entender por qué se apaga— como el del software, escribiendo sistemas que resuelven el laburo de todos los días.</p>
+          <p>BC Informática nació de algo que veo seguido: mucha gente convive con una computadora que anda mal, con una planilla que ya no alcanza o con un sistema que nadie le explicó, y termina resignándose porque preguntar da vergüenza o porque la respuesta siempre viene en un idioma que no se entiende.</p>
+          <p>Mi trabajo es el contrario: explicarte qué pasa en criollo, decirte qué conviene hacer aunque no sea lo más caro, y dejarte entendiendo tu propia herramienta.</p>
+        </div>
+
+        <div class="card">
+          <span class="tag tag--muted">// Ficha técnica</span>
+          <dl class="spec" style="margin-top:6px">
+            <dt>Base</dt><dd>Paraná, Entre Ríos. Presencial en la ciudad y alrededores.</dd>
+            <dt>Online</dt><dd>Clases, asesoramiento, desarrollo y soporte remoto a todo el país.</dd>
+            <dt>Trabajo con</dt><dd>Windows, Linux, redes hogareñas y de oficina, hardware de PC y notebook.</dd>
+            <dt>Desarrollo</dt><dd>Aplicaciones web y sistemas de gestión, con base de datos propia.</dd>
+            <dt>También</dt><dd>Identidad de marca y contenido técnico: IA, novedades e historia de la informática.</dd>
+            <dt>Respuesta</dt><dd>Mismo día, por WhatsApp o Instagram.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top:26px">
+        <a class="btn btn--primary" href="#/contacto">Hablemos <span class="arw">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CONTACTO ══════════ -->
+  <section class="view" id="v-contacto" aria-labelledby="h-contacto">
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Contacto</span>
+        <h2 id="h-contacto">Contame qué necesitás</h2>
+        <p class="lead">Escribime por donde te quede más cómodo. Respondo el mismo día, y si es algo urgente decímelo en el primer mensaje.</p>
+      </div>
+
+      <div class="channels">
+        <a class="chan" id="chan-wa" href="#" target="_blank" rel="noopener">
+          <span class="tag">// WhatsApp</span>
+          <b>Mandame un mensaje</b>
+          <span id="wa-label">A confirmar</span>
+        </a>
+        <a class="chan" href="https://instagram.com/bc.informatica.pna" target="_blank" rel="noopener">
+          <span class="tag">// Instagram</span>
+          <b>Seguime y escribime</b>
+          <span>@bc.informatica.pna</span>
+        </a>
+        <a class="chan" id="chan-mail" href="#">
+          <span class="tag">// Email</span>
+          <b>Para algo más largo</b>
+          <span id="mail-label">A confirmar</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tag">// Formulario</span>
+        <h2>O completá esto y lo armo por vos</h2>
+        <p class="hint">Al enviarlo se abre tu WhatsApp con el mensaje ya escrito, listo para mandar. No se guarda nada en esta página.</p>
+      </div>
+
+      <form id="form" novalidate>
+        <div class="row">
+          <div>
+            <label for="f-nombre">Nombre</label>
+            <input id="f-nombre" name="nombre" type="text" autocomplete="name" placeholder="Cómo te llamás" required>
+          </div>
+          <div>
+            <label for="f-servicio">Qué necesitás</label>
+            <select id="f-servicio" name="servicio">
+              <option>Service técnico / reparación</option>
+              <option>Sistema o app a medida</option>
+              <option>Clases personalizadas</option>
+              <option>Asesoramiento técnico</option>
+              <option>Otra cosa</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label for="f-mensaje">Contame el problema</label>
+          <textarea id="f-mensaje" name="mensaje" placeholder="Qué te pasa, con qué equipo o desde cuándo. Cuanto más me cuentes, mejor te puedo responder." required></textarea>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <button class="btn btn--primary" type="submit">Enviar por WhatsApp <span class="arw">→</span></button>
+          <button class="btn btn--ghost" type="button" id="send-mail">Enviar por email <span class="arw">→</span></button>
+        </div>
+        <p class="hint" id="form-msg" role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="statusbar">
+  <div class="inner">
+    <span class="live"><i></i>Disponible</span>
+    <span>BC Informática · Paraná, Entre Ríos</span>
+    <a href="https://instagram.com/bc.informatica.pna" target="_blank" rel="noopener">@bc.informatica.pna</a>
+    <span class="push">© <span id="yr">2026</span> · Analista en Sistemas</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ─── DATOS A COMPLETAR ───────────────────────────────
+     WA: número con código de país, sin + ni espacios.
+     MAIL: dirección de contacto.                          */
+  var WA       = "5493435038054";
+  var WA_LABEL = "+54 9 343 503-8054";
+  var MAIL     = "bc.informatica.pna@gmail.com";
+  /* ──────────────────────────────────────────────────── */
+
+  var ROUTES = ["inicio","servicios","proyectos","precios","sobre-mi","contacto"];
+  var EXT = {inicio:"tsx",servicios:"ts",proyectos:"ts",precios:"json","sobre-mi":"md",contacto:"sh"};
+
+  var tabs   = document.getElementById("tabs");
+  var burger = document.getElementById("burger");
+  var sweep  = document.getElementById("sweep");
+  var crumb  = document.getElementById("crumb");
+  var first  = true;
+
+  function routeName(){
+    var h = (location.hash || "").replace(/^#\/?/, "").trim();
+    return ROUTES.indexOf(h) > -1 ? h : "inicio";
+  }
+
+  function render(){
+    var name = routeName();
+
+    ROUTES.forEach(function(r){
+      var el = document.getElementById("v-" + r);
+      if (el) el.classList.toggle("is-active", r === name);
+    });
+
+    Array.prototype.forEach.call(tabs.querySelectorAll(".tab"), function(a){
+      var is = a.getAttribute("href") === "#/" + name;
+      if (is) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+
+    crumb.textContent = "~/bc-informatica/" + name + "." + EXT[name];
+    document.title = name === "inicio"
+      ? "BC Informática"
+      : name.charAt(0).toUpperCase() + name.slice(1).replace("-", " ") + " · BC Informática";
+
+    closeMenu();
+
+    if (!first){
+      sweep.classList.remove("run");
+      void sweep.offsetWidth;
+      sweep.classList.add("run");
+      window.scrollTo({top:0, behavior:"auto"});
+    }
+    first = false;
+  }
+
+  function closeMenu(){
+    tabs.classList.remove("is-open");
+    burger.setAttribute("aria-expanded", "false");
+    burger.textContent = "MENÚ";
+  }
+
+  burger.addEventListener("click", function(){
+    var open = tabs.classList.toggle("is-open");
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+    burger.textContent = open ? "CERRAR" : "MENÚ";
+  });
+
+  window.addEventListener("hashchange", render);
+
+  /* ─── terminal typing ─── */
+  (function(){
+    var target = document.getElementById("typed");
+    var out    = document.getElementById("out");
+    if (!target || !out) return;
+
+    var text = "cat perfil.ts";
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduce){ target.textContent = text; out.classList.add("on"); return; }
+
+    var i = 0;
+    (function step(){
+      target.textContent = text.slice(0, ++i);
+      if (i < text.length) setTimeout(step, 58);
+      else setTimeout(function(){ out.classList.add("on"); }, 260);
+    })();
+  })();
+
+  /* ─── contacto ─── */
+  var waLabel   = document.getElementById("wa-label");
+  var mailLabel = document.getElementById("mail-label");
+  var chanWa    = document.getElementById("chan-wa");
+  var chanMail  = document.getElementById("chan-mail");
+
+  if (WA){
+    waLabel.textContent = WA_LABEL;
+    chanWa.href = "https://wa.me/" + WA.replace(/\D/g,"");
+  }
+  if (MAIL){
+    mailLabel.textContent = MAIL;
+    chanMail.href = "mailto:" + MAIL;
+  }
+
+  var form = document.getElementById("form");
+  var msg  = document.getElementById("form-msg");
+
+  function compose(){
+    var nombre   = document.getElementById("f-nombre").value.trim();
+    var servicio = document.getElementById("f-servicio").value;
+    var texto    = document.getElementById("f-mensaje").value.trim();
+
+    if (!nombre || !texto){
+      msg.textContent = "Falta el nombre o el mensaje. Completá los dos y te llega derecho.";
+      (!nombre ? document.getElementById("f-nombre") : document.getElementById("f-mensaje")).focus();
+      return null;
+    }
+    msg.textContent = "";
+    return {
+      nombre: nombre,
+      asunto: "Consulta por " + servicio.toLowerCase(),
+      cuerpo: "Hola Belén, soy " + nombre + ".\n\nNecesito: " + servicio + "\n\n" + texto
+    };
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var d = compose();
+    if (!d) return;
+    if (!WA){
+      msg.textContent = "El WhatsApp todavía no está cargado en la página. Escribime por Instagram a @bc.informatica.pna mientras tanto.";
+      return;
+    }
+    window.open("https://wa.me/" + WA.replace(/\D/g,"") + "?text=" + encodeURIComponent(d.cuerpo), "_blank", "noopener");
+  });
+
+  document.getElementById("send-mail").addEventListener("click", function(){
+    var d = compose();
+    if (!d) return;
+    if (!MAIL){
+      msg.textContent = "El email todavía no está cargado en la página. Escribime por Instagram a @bc.informatica.pna mientras tanto.";
+      return;
+    }
+    window.location.href = "mailto:" + MAIL +
+      "?subject=" + encodeURIComponent(d.asunto) +
+      "&body=" + encodeURIComponent(d.cuerpo);
+  });
+
+  document.getElementById("yr").textContent = new Date().getFullYear();
+
+  render();
+})();
+</script>
+
+</body>
 </html>
