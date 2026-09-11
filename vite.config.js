@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// Sitio estático de una sola página: todo vive en index.html.
+// base relativo para que ande igual en Vercel o en cualquier hosting.
 export default defineConfig({
-  plugins: [react()],
-  base: './', // Ensures assets work on GitHub Pages, Vercel, or custom domains
+  base: './',
 })

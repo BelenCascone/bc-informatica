@@ -1,52 +1,74 @@
 # </BC> INFORMÁTICA // Software & IT
 
-Sitio web oficial y landing page de **BC Informática** — Soluciones informáticas para tu casa y tu empresa. Sin vueltas y en tu idioma. Paraná, Entre Ríos.
+Sitio web oficial y landing page de **BC Informática** — Soluciones informáticas
+para tu casa y tu empresa. Sin vueltas y en tu idioma. Paraná, Entre Ríos.
 
 Desarrollado por **Belén Cascone** (Analista en Sistemas).
 
 ---
 
-## ⚡ Tecnologías
+## ⚡ Cómo está hecho
 
-- **React 18**
-- **Vite 6**
-- **Tailwind CSS**
-- **Lucide Icons**
-- **Fuentes**: Space Grotesk, JetBrains Mono, Inter
+Es un sitio estático de **un solo archivo**: todo el HTML, el CSS y el JavaScript
+viven en `index.html`. No hay framework ni dependencias en el navegador; lo único
+externo son las fuentes de Google.
+
+- **Navegación por pestañas** con router propio por hash (`#/inicio`,
+  `#/servicios`, `#/proyectos`, `#/precios`, `#/sobre-mi`, `#/contacto`). Al
+  cambiar de pestaña se cambia de vista, no se scrollea: en el celular cada
+  sección arranca arriba.
+- **Sistema de diseño Dev Blueprint**: grafito `#121412`, lima `#C6FF00`, verde
+  circuito `#1B4332`, crema `#FBF8E6`.
+- **Tipografías**: Space Grotesk (títulos), JetBrains Mono (etiquetas y terminal),
+  Inter (texto).
+- **Animaciones** de tipeo, entrada de vista y barrido al navegar, todas apagadas
+  cuando el sistema pide menos movimiento (`prefers-reduced-motion`).
+- **Vite** se usa solamente para empaquetar y copiar `public/assets` al build.
 
 ---
 
-## 🛠️ Servicios Destacados
+## 🛠️ Servicios
 
-1. **[01] Service Técnico**: Reparación de PC y notebooks, formateo, limpieza, piezas, recuperación de datos. Diagnóstico previo.
-2. **[02] Sistemas a Medida**: Software personalizado para stock, clientes, ventas, turnos y pedidos.
-3. **[03] Clases Personalizadas**: Desde cero para perder el miedo. Office, internet, celular, IA aplicada.
-4. **[04] Asesoramiento Técnico**: Elección de equipos, orden tecnológico y seguridad antes de gastar de más.
+1. **[01] Service Técnico** — Reparación de PC y notebooks, formateo, limpieza,
+   cambio de piezas, recuperación de datos. Diagnóstico previo sin cargo.
+2. **[02] Sistemas a Medida** — Software para stock, clientes, ventas, turnos y
+   pedidos, entregado por etapas.
+3. **[03] Clases Personalizadas** — Desde cero para perder el miedo: Office,
+   internet, celular, IA aplicada. A domicilio en Paraná.
+4. **[04] Asesoramiento Técnico** — Elección de equipos, orden tecnológico,
+   backups y seguridad antes de gastar de más.
 
 ---
 
-## 🚀 Instalación y Desarrollo Local
+## 🚀 Desarrollo local
 
 ```bash
-# 1. Clonar repositorio
 git clone https://github.com/BelenCascone/bc-informatica.git
-
-# 2. Entrar en la carpeta
 cd "BC INFORMATICA"
-
-# 3. Instalar dependencias
 npm install
-
-# 4. Iniciar servidor de desarrollo
-npm run dev
-
-# 5. Compilar para producción
-npm run build
+npm run dev     # servidor de desarrollo
+npm run build   # compila a dist/
 ```
+
+Para un cambio de texto o de estilo no hace falta nada de esto: se edita
+`index.html` y se abre en el navegador.
+
+## 📦 Estructura
+
+```
+index.html          → el sitio entero
+logo.jpeg           → favicon e imagen para redes
+public/assets/      → placas de Instagram y material de marca
+vercel.json         → reenvía todas las rutas a index.html
+```
+
+El deploy es automático: cada push a `main` lo publica Vercel.
 
 ---
 
 ## 📱 Contacto & Redes
 
-- **Instagram**: [@bc.informatica](https://www.instagram.com/bc.informatica)
+- **WhatsApp**: [+54 9 343 503-8054](https://wa.me/5493435038054)
+- **Instagram**: [@bc.informatica.pna](https://www.instagram.com/bc.informatica.pna)
+- **Email**: bc.informatica.pna@gmail.com
 - **Ubicación**: Paraná, Entre Ríos (atención presencial y remota)
