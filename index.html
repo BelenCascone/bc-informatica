@@ -7,11 +7,11 @@
 <meta name="description" content="Detrás de BC Informática hay una persona, no un call center. Arreglo, enseño, asesoro y desarrollo sistemas a medida. Paraná, Entre Ríos y a distancia.">
 <meta name="keywords" content="BC Informática, Belén Analista en Sistemas, Service técnico Paraná, Reparación PC Paraná, Sistemas a medida, Clases computación Paraná, Asesoramiento informático">
 <meta name="theme-color" content="#121412">
-<link rel="icon" type="image/jpeg" href="./assets/Image 1.jpeg">
+<link rel="icon" type="image/jpeg" href="./logo.jpeg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas">
 <meta property="og:description" content="Soluciones informáticas para tu casa y tu empresa. Sin vueltas y en tu idioma. Paraná · Entre Ríos.">
-<meta property="og:image" content="./assets/Image 1.jpeg">
+<meta property="og:image" content="./logo.jpeg">
 <meta property="og:locale" content="es_AR">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +109,17 @@ p{margin:0;max-width:62ch}
   font-family:var(--f-mono);font-weight:700;font-size:17px;letter-spacing:-.02em;
   color:var(--lime);white-space:nowrap;
 }
-.iso .thin{color:var(--lime);opacity:.55;font-weight:400}
+/* El isotipo: los signos < > van SIEMPRE calados —dibujados como contorno,
+   con el relleno vacío—; la barra / y las letras BC, macizas. */
+.iso{display:inline-flex;align-items:center;gap:0}
+.iso .br{
+  height:.92em;width:auto;flex:none;
+  fill:none;stroke:var(--lime);stroke-width:7;
+  stroke-linejoin:round;stroke-linecap:round;
+}
+.iso .br--r{transform:scaleX(-1)}
+.iso .slash{color:var(--lime);margin:0 1px}
+.iso .bc{color:var(--cream)}
 .brand-name{
   font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;
   color:var(--muted);text-transform:uppercase;
@@ -385,14 +395,14 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
   font-family:var(--f-display);font-weight:700;font-size:1rem;letter-spacing:-.01em;
   color:var(--lime);margin:-2px 0 2px;
 }
-/* ── tira de piezas de marca ── */
+/* ── tira de placas de Instagram (4:5, tal como se publican) ── */
 .flyers{
   display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;
 }
 @media (max-width:900px){.flyers{grid-template-columns:repeat(2,1fr)}}
 .flyer{
   display:block;border:1px solid rgba(143,158,139,.18);border-radius:var(--r-lg);
-  overflow:hidden;background:var(--surface);aspect-ratio:1/1;
+  overflow:hidden;background:var(--surface);aspect-ratio:4/5;max-width:100%;
   transition:border-color .22s ease,transform .22s ease;
 }
 .flyer:hover{border-color:rgba(198,255,0,.45);transform:translateY(-3px)}
@@ -402,7 +412,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 <body>
 <header class="topbar">
   <a class="brand" href="#/inicio" aria-label="BC Informática — inicio">
-    <span class="iso"><span class="thin">&lt;</span>/BC<span class="thin">&gt;</span></span>
+    <span class="iso"><svg class="br" viewBox="0 0 62 100" aria-hidden="true"><path d="M52 8 L10 50 L52 92 L52 62 L31 50 L52 38 Z"/></svg><span class="slash">/</span><span class="bc">BC</span><svg class="br br--r" viewBox="0 0 62 100" aria-hidden="true"><path d="M52 8 L10 50 L52 92 L52 62 L31 50 L52 38 Z"/></svg></span>
     <span class="brand-name">Informática</span>
   </a>
   <button class="burger" id="burger" aria-expanded="false" aria-controls="tabs">MENÚ</button>
@@ -607,14 +617,14 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 
       <div class="sec-head" style="margin-top:34px;margin-bottom:14px">
         <span class="tag">// Piezas de marca</span>
-        <h2>Diseño propio, hecho con el mismo sistema</h2>
-        <p class="lead">Las placas que publico en Instagram salen del brand kit de BC Informática. Si tu negocio necesita algo así, también lo hago.</p>
+        <h2>El diseño también lo hago yo</h2>
+        <p class="lead">Las placas que publico en Instagram salen del sistema de marca de BC Informática, hecho de cero. Si tu negocio necesita algo así, también lo hago.</p>
       </div>
       <div class="flyers">
-        <a class="flyer" href="./assets/bc-presentacion-01.png" target="_blank" rel="noopener"><img src="./assets/bc-presentacion-01.png" alt="Placa de presentación de BC Informática" loading="lazy" width="1080" height="1080"></a>
-        <a class="flyer" href="./assets/bc-carrusel-03.png" target="_blank" rel="noopener"><img src="./assets/bc-carrusel-03.png" alt="Placa del servicio de service técnico" loading="lazy" width="1080" height="1080"></a>
-        <a class="flyer" href="./assets/bc-carrusel-04.png" target="_blank" rel="noopener"><img src="./assets/bc-carrusel-04.png" alt="Placa del servicio de sistemas a medida" loading="lazy" width="1080" height="1080"></a>
-        <a class="flyer" href="./assets/bc-carrusel-05.png" target="_blank" rel="noopener"><img src="./assets/bc-carrusel-05.png" alt="Placa del servicio de clases personalizadas" loading="lazy" width="1080" height="1080"></a>
+        <a class="flyer" href="./assets/placa-01-service.png" target="_blank" rel="noopener"><img src="./assets/placa-01-service.png" alt="Placa de Instagram del servicio de service técnico" loading="lazy" width="1080" height="1350"></a>
+        <a class="flyer" href="./assets/placa-02-sistemas.png" target="_blank" rel="noopener"><img src="./assets/placa-02-sistemas.png" alt="Placa de Instagram del servicio de sistemas a medida" loading="lazy" width="1080" height="1350"></a>
+        <a class="flyer" href="./assets/placa-03-clases.png" target="_blank" rel="noopener"><img src="./assets/placa-03-clases.png" alt="Placa de Instagram del servicio de clases personalizadas" loading="lazy" width="1080" height="1350"></a>
+        <a class="flyer" href="./assets/placa-04-asesoramiento.png" target="_blank" rel="noopener"><img src="./assets/placa-04-asesoramiento.png" alt="Placa de Instagram del servicio de asesoramiento técnico" loading="lazy" width="1080" height="1350"></a>
       </div>
     </div>
   </section>
