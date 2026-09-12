@@ -98,6 +98,13 @@ input,select{font-family:var(--f-mono)}
 .tab-btn.active{color:var(--lime);background:var(--surface)}
 .topbar .user{margin-left:auto;display:flex;align-items:center;gap:10px}
 .topbar .user span{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+@media (max-width:640px){
+  .topbar{gap:8px}
+  .brand .sub,.topbar .user span{display:none}
+  .tabs{margin-left:0}
+  .tab-btn{padding:8px 9px}
+  .topbar .user .btn{padding:8px 12px}
+}
 
 main{max-width:var(--maxw);margin:0 auto;padding:28px clamp(16px,4vw,32px) 80px}
 .view{display:none}
@@ -151,6 +158,46 @@ tr:last-child td{border-bottom:none}
 textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-soft);color:var(--cream);
   border-radius:var(--r);padding:10px 12px;font-family:var(--f-body);font-size:14px;resize:vertical;min-height:60px}
 
+/* ---------- precios ---------- */
+.tab-btn .count{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:99px;
+  background:var(--lime);color:#121412;font-size:10.5px;font-weight:700;text-align:center;line-height:18px}
+.kpi .sub{display:block;margin-top:4px;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.avisos{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.aviso{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-lg);
+  background:var(--ground-deep);border:1px solid var(--hair-soft);border-left:3px solid var(--muted)}
+.aviso .ico{font-family:var(--f-mono);font-weight:700;font-size:12px;flex:none;width:64px;text-transform:uppercase;letter-spacing:.05em}
+.aviso .txt{font-size:13.5px;line-height:1.5}
+.aviso .txt b{color:var(--cream)}
+.aviso.subir{border-left-color:#ffc107}.aviso.subir .ico{color:#ffc107}
+.aviso.bajo{border-left-color:var(--red)}.aviso.bajo .ico{color:var(--red)}
+.aviso.alto{border-left-color:#7cc4ff}.aviso.alto .ico{color:#7cc4ff}
+.aviso.ok{border-left-color:var(--lime)}.aviso.ok .ico{color:var(--lime)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.panel-head h2{margin:0}
+.table-wrap{overflow-x:auto}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 7px;border-radius:99px;white-space:nowrap}
+.pill.bajo{background:rgba(255,107,94,.14);color:var(--red)}
+.pill.alto{background:rgba(124,196,255,.14);color:#7cc4ff}
+.pill.ok{background:rgba(198,255,0,.12);color:var(--lime)}
+.pill.subir{background:rgba(255,193,7,.14);color:#ffc107}
+.badge.borrador{background:rgba(143,158,139,.18);color:var(--muted)}
+.badge.enviado{background:rgba(124,196,255,.14);color:#7cc4ff}
+.badge.aceptado{background:rgba(198,255,0,.14);color:var(--lime)}
+.badge.rechazado{background:rgba(255,107,94,.14);color:var(--red)}
+.setup-box{border-color:rgba(255,193,7,.4)}
+.setup-box code{font-family:var(--f-mono);font-size:12.5px;color:var(--lime)}
+.modal--wide{max-width:680px}
+.ref-hint{margin:4px 0 14px;padding:10px 12px;border-radius:var(--r);background:var(--ground-deep);
+  border:1px dashed var(--hair-soft);font-size:12.5px;color:var(--muted)}
+.ref-hint b{color:var(--cream)}
+.ref-hint ul{margin:6px 0 0;padding-left:18px}
+.calc{font-family:var(--f-mono);font-size:12px;color:var(--muted);margin:-6px 0 12px}
+.calc b{color:var(--lime)}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--cream);margin-bottom:14px}
+.check input{accent-color:var(--lime);width:16px;height:16px}
+.src a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.src a:hover{color:var(--lime)}
+
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-2);
   border:1px solid var(--hair-soft);color:var(--cream);padding:10px 18px;border-radius:var(--r);
   font-size:13px;font-family:var(--f-mono);z-index:200;opacity:0;pointer-events:none;transition:.2s ease}
@@ -184,6 +231,7 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
       <button class="tab-btn active" data-view="resumen">Resumen</button>
       <button class="tab-btn" data-view="proyectos">Proyectos</button>
       <button class="tab-btn" data-view="movimientos">Movimientos</button>
+      <button class="tab-btn" data-view="precios">Precios<span class="count" id="avisos-count" hidden></span></button>
     </nav>
     <div class="user">
       <span id="user-email"></span>
@@ -199,6 +247,14 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
         <div class="kpi"><span class="tag">Ingresos totales</span><div class="val pos" id="kpi-ingresos">—</div></div>
         <div class="kpi"><span class="tag">Egresos totales</span><div class="val neg" id="kpi-egresos">—</div></div>
         <div class="kpi"><span class="tag">Proyectos activos</span><div class="val" id="kpi-activos">—</div></div>
+      </div>
+
+      <div class="panel" id="resumen-avisos" hidden>
+        <div class="panel-head">
+          <h2>// Avisos de precios</h2>
+          <button class="btn btn--ghost" data-goto="precios">Ver todos →</button>
+        </div>
+        <ul class="avisos" id="lista-avisos-resumen"></ul>
       </div>
 
       <div class="panel">
@@ -271,12 +327,90 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
         <p class="empty-state" id="empty-movimientos" hidden>Todavía no cargaste ningún movimiento.</p>
       </div>
     </section>
+
+    <!-- ===== PRECIOS ===== -->
+    <section class="view" id="view-precios">
+      <div class="panel setup-box" id="precios-setup" hidden>
+        <h2>// Falta un paso en Supabase</h2>
+        <p>Para usar esta pestaña hay que crear dos tablas nuevas: en Supabase andá a <b>SQL Editor → New query</b>,
+        pegá el contenido de <code>supabase/precios.sql</code> y tocá <b>Run</b>. Después recargá esta página.</p>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><span class="tag">Tu tarifa por hora</span><div class="val" id="kpi-tarifa">—</div><span class="sub" id="kpi-tarifa-sub">de tu lista de precios</span></div>
+        <div class="kpi"><span class="tag">Hora real cobrada</span><div class="val" id="kpi-hora-real">—</div><span class="sub" id="kpi-hora-real-sub">presupuestos con horas cargadas</span></div>
+        <div class="kpi"><span class="tag">Presupuestos aceptados</span><div class="val pos" id="kpi-aceptado">—</div><span class="sub" id="kpi-aceptado-sub">—</span></div>
+        <div class="kpi"><span class="tag">Inflación · dólar</span><div class="val" id="kpi-ipc">—</div><span class="sub" id="kpi-dolar">cargando…</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>// Avisos</h2>
+        <ul class="avisos" id="lista-avisos"></ul>
+        <p class="empty-state" id="empty-avisos" hidden>Nada para revisar: tus precios están al día.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>// Presupuestos</h2>
+          <div class="filters">
+            <select id="filtro-estado-presu">
+              <option value="">Todos los estados</option>
+              <option value="borrador">Borrador</option>
+              <option value="enviado">Enviado</option>
+              <option value="aceptado">Aceptado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+            <button class="btn btn--primary" id="btn-nuevo-presu">+ Nuevo presupuesto</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Trabajo</th><th>Cliente</th><th>Precio</th><th>Por hora</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="tabla-presupuestos"></tbody>
+          </table>
+        </div>
+        <p class="empty-state" id="empty-presupuestos" hidden>Todavía no cargaste presupuestos.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>// Lista de precios</h2>
+          <div class="filters">
+            <select id="filtro-cat-precio">
+              <option value="">Todas las categorías</option>
+            </select>
+            <button class="btn btn--primary" id="btn-nuevo-precio">+ Nuevo precio</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Servicio</th><th>Precio</th><th>Último ajuste</th><th>Inflación desde entonces</th><th>Contra el mercado</th><th></th></tr></thead>
+            <tbody id="tabla-precios"></tbody>
+          </table>
+        </div>
+        <p class="empty-state" id="empty-precios" hidden>Todavía no cargaste tu lista de precios.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>// Precios de mercado</h2>
+          <span class="dim mono" id="ref-revisado" style="font-size:12px"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Servicio</th><th>Rango</th><th>Zona</th><th>Fuente</th></tr></thead>
+            <tbody id="tabla-referencias"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
 
 <div id="toast"></div>
 
 <script src="./config.js"></script>
+<script src="./referencias.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script type="module" src="./app.js"></script>
 </body>
