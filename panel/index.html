@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel // BC Informática</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/jpeg" href="../logo.jpeg">
+<meta name="theme-color" content="#121412">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>*{box-sizing:border-box}html{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<style>
+:root{
+  --ground:#121412;
+  --ground-deep:#0d0f0d;
+  --surface:#1A1D1A;
+  --surface-2:#232823;
+  --lime:#C6FF00;
+  --lime-dim:#a6d700;
+  --circuit:#1B4332;
+  --cream:#FBF8E6;
+  --muted:#8F9E8B;
+  --hair:rgba(198,255,0,.14);
+  --hair-soft:rgba(143,158,139,.18);
+  --red:#ff6b5e;
+  --f-display:'Space Grotesk','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono','SFMono-Regular',ui-monospace,monospace;
+  --f-body:'Inter','Segoe UI',system-ui,sans-serif;
+  --topbar:60px;
+  --maxw:1180px;
+  --r:4px;
+  --r-lg:8px;
+}
+body{
+  background:var(--ground);color:var(--cream);font-family:var(--f-body);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;
+}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:-.02em;margin:0}
+.mono{font-family:var(--f-mono)}
+.tag{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--lime)}
+.dim{color:var(--muted)}
+button{font-family:inherit}
+input,select{font-family:var(--f-mono)}
+
+/* ---------- login ---------- */
+#login-view{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+}
+.login-box{
+  width:100%;max-width:380px;background:var(--surface);border:1px solid var(--hair-soft);
+  border-radius:var(--r-lg);padding:32px 28px;
+}
+.login-box .iso{display:block;text-align:center;margin-bottom:22px;font-family:var(--f-mono);
+  font-weight:700;font-size:22px;color:var(--lime)}
+.field{margin-bottom:14px}
+.field label{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.field input,.field select{
+  width:100%;background:var(--ground-deep);border:1px solid var(--hair-soft);color:var(--cream);
+  border-radius:var(--r);padding:10px 12px;font-size:14px;outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--lime)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;
+  border:1px solid transparent;border-radius:var(--r);padding:10px 18px;font-weight:600;
+  font-size:13.5px;font-family:var(--f-mono);letter-spacing:.01em;transition:.15s ease;
+}
+.btn--primary{background:var(--lime);color:#121412}
+.btn--primary:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(198,255,0,.25)}
+.btn--ghost{background:transparent;color:var(--cream);border-color:var(--hair-soft)}
+.btn--ghost:hover{border-color:var(--lime);color:var(--lime)}
+.btn--danger{background:transparent;color:var(--red);border-color:rgba(255,107,94,.35)}
+.btn--danger:hover{background:rgba(255,107,94,.1)}
+.btn--full{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.error-msg{color:var(--red);font-size:13px;margin-top:10px;font-family:var(--f-mono)}
+
+/* ---------- app shell ---------- */
+#app-view{display:none;min-height:100vh}
+.topbar{
+  position:sticky;top:0;z-index:20;height:var(--topbar);display:flex;align-items:center;gap:16px;
+  padding:0 clamp(16px,4vw,32px);background:rgba(13,15,13,.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--hair-soft);
+}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-weight:700;
+  color:var(--lime);font-size:15px;white-space:nowrap}
+.brand .sub{color:var(--muted);font-weight:400;font-size:12px}
+.tabs{display:flex;gap:4px;margin-left:12px;flex:1;overflow-x:auto}
+.tab-btn{
+  background:none;border:none;color:var(--muted);padding:8px 12px;font-family:var(--f-mono);
+  font-size:12.5px;cursor:pointer;border-radius:var(--r);white-space:nowrap;
+}
+.tab-btn:hover{color:var(--cream)}
+.tab-btn.active{color:var(--lime);background:var(--surface)}
+.topbar .user{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar .user span{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+
+main{max-width:var(--maxw);margin:0 auto;padding:28px clamp(16px,4vw,32px) 80px}
+.view{display:none}
+.view.active{display:block}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--hair-soft);border-radius:var(--r-lg);padding:18px}
+.kpi .tag{display:block;margin-bottom:8px}
+.kpi .val{font-family:var(--f-display);font-size:1.7rem;font-weight:700;color:var(--cream)}
+.kpi .val.pos{color:var(--lime)}
+.kpi .val.neg{color:var(--red)}
+
+.panel{background:var(--surface);border:1px solid var(--hair-soft);border-radius:var(--r-lg);
+  padding:20px;margin-bottom:20px}
+.panel h2{font-size:1rem;margin-bottom:14px}
+.grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+@media (max-width:860px){.grid-2{grid-template-columns:1fr}}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--hair-soft)}
+td{padding:9px 10px;border-bottom:1px solid rgba(143,158,139,.1);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.row-actions{display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{background:none;border:1px solid var(--hair-soft);color:var(--muted);border-radius:var(--r);
+  padding:4px 8px;cursor:pointer;font-size:12px;font-family:var(--f-mono)}
+.icon-btn:hover{color:var(--lime);border-color:var(--lime)}
+.icon-btn.danger:hover{color:var(--red);border-color:var(--red)}
+
+.badge{display:inline-block;font-family:var(--f-mono);font-size:10.5px;padding:2px 8px;
+  border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
+.badge.activo{background:rgba(198,255,0,.14);color:var(--lime)}
+.badge.pausado{background:rgba(255,193,7,.14);color:#ffc107}
+.badge.finalizado{background:rgba(143,158,139,.18);color:var(--muted)}
+.badge.ingreso{background:rgba(198,255,0,.14);color:var(--lime)}
+.badge.egreso{background:rgba(255,107,94,.14);color:var(--red)}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters select{padding:7px 10px;font-size:12.5px;background:var(--ground-deep);
+  border:1px solid var(--hair-soft);color:var(--cream);border-radius:var(--r)}
+.empty-state{color:var(--muted);font-size:13.5px;padding:24px 0;text-align:center}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;
+  align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal{background:var(--surface);border:1px solid var(--hair-soft);border-radius:var(--r-lg);
+  padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.modal h3{margin-bottom:16px}
+.modal .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-soft);color:var(--cream);
+  border-radius:var(--r);padding:10px 12px;font-family:var(--f-body);font-size:14px;resize:vertical;min-height:60px}
+
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-2);
+  border:1px solid var(--hair-soft);color:var(--cream);padding:10px 18px;border-radius:var(--r);
+  font-size:13px;font-family:var(--f-mono);z-index:200;opacity:0;pointer-events:none;transition:.2s ease}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+</style>
+</head>
+<body>
+
+<div id="login-view">
+  <div class="login-box">
+    <span class="iso">&lt;/BC&gt; PANEL</span>
+    <form id="login-form">
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn--primary btn--full" type="submit" id="login-btn">Entrar</button>
+      <p class="error-msg" id="login-error" hidden></p>
+    </form>
+  </div>
+</div>
+
+<div id="app-view">
+  <div class="topbar">
+    <div class="brand">&lt;/BC&gt;<span class="sub">panel</span></div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-view="resumen">Resumen</button>
+      <button class="tab-btn" data-view="proyectos">Proyectos</button>
+      <button class="tab-btn" data-view="movimientos">Movimientos</button>
+    </nav>
+    <div class="user">
+      <span id="user-email"></span>
+      <button class="btn btn--ghost" id="logout-btn">Salir</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- ===== RESUMEN ===== -->
+    <section class="view active" id="view-resumen">
+      <div class="kpis">
+        <div class="kpi"><span class="tag">Balance total</span><div class="val" id="kpi-balance">—</div></div>
+        <div class="kpi"><span class="tag">Ingresos totales</span><div class="val pos" id="kpi-ingresos">—</div></div>
+        <div class="kpi"><span class="tag">Egresos totales</span><div class="val neg" id="kpi-egresos">—</div></div>
+        <div class="kpi"><span class="tag">Proyectos activos</span><div class="val" id="kpi-activos">—</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>// Ingresos vs egresos — últimos 6 meses</h2>
+        <canvas id="chart-mensual" height="90"></canvas>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h2>// Últimos movimientos</h2>
+          <table>
+            <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Monto</th></tr></thead>
+            <tbody id="tabla-ultimos-mov"></tbody>
+          </table>
+          <p class="empty-state" id="empty-ultimos-mov" hidden>Todavía no cargaste movimientos.</p>
+        </div>
+        <div class="panel">
+          <h2>// Proyectos activos</h2>
+          <table>
+            <thead><tr><th>Nombre</th><th>Cliente</th></tr></thead>
+            <tbody id="tabla-proyectos-activos"></tbody>
+          </table>
+          <p class="empty-state" id="empty-proyectos-activos" hidden>No hay proyectos activos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROYECTOS ===== -->
+    <section class="view" id="view-proyectos">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="filtro-estado-proyecto">
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="pausado">Pausado</option>
+            <option value="finalizado">Finalizado</option>
+          </select>
+        </div>
+        <button class="btn btn--primary" id="btn-nuevo-proyecto">+ Nuevo proyecto</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Nombre</th><th>Cliente</th><th>Estado</th><th>Inicio</th><th></th></tr></thead>
+          <tbody id="tabla-proyectos"></tbody>
+        </table>
+        <p class="empty-state" id="empty-proyectos" hidden>Todavía no cargaste ningún proyecto.</p>
+      </div>
+    </section>
+
+    <!-- ===== MOVIMIENTOS ===== -->
+    <section class="view" id="view-movimientos">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="filtro-tipo-mov">
+            <option value="">Todos los tipos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="egreso">Egresos</option>
+          </select>
+          <select id="filtro-proyecto-mov">
+            <option value="">Todos los proyectos</option>
+          </select>
+        </div>
+        <button class="btn btn--primary" id="btn-nuevo-mov">+ Nuevo movimiento</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Proyecto</th><th>Descripción</th><th>Monto</th><th></th></tr></thead>
+          <tbody id="tabla-movimientos"></tbody>
+        </table>
+        <p class="empty-state" id="empty-movimientos" hidden>Todavía no cargaste ningún movimiento.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="./config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
