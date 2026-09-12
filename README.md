@@ -59,6 +59,8 @@ Para un cambio de texto o de estilo no hace falta nada de esto: se edita
 index.html          → el sitio entero
 logo.jpeg           → favicon e imagen para redes
 public/assets/      → placas de Instagram y material de marca
+public/panel/       → panel privado (Supabase): proyectos, movimientos y precios
+supabase/           → tablas del panel y guía de configuración (SETUP.md)
 vercel.json         → reenvía todas las rutas a index.html
 ```
 

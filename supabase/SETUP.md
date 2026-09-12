@@ -7,8 +7,10 @@
 
 ## 2. Crear las tablas
 1. En el menú lateral, andá a **SQL Editor** → **New query**.
-2. Pegá todo el contenido de [`supabase/schema.sql`](../supabase/schema.sql) y tocá **Run**.
+2. Pegá todo el contenido de [`schema.sql`](./schema.sql) y tocá **Run**.
 3. Esto crea las tablas `projects` y `transactions`, con seguridad para que cada dato solo lo puedas ver vos.
+4. Hacé lo mismo con [`precios.sql`](./precios.sql) (otra **New query**): crea las tablas de la pestaña
+   **Precios** (`price_items` y `quotes`), con la misma seguridad.
 
 ## 3. Crear tu usuario
 1. Andá a **Authentication → Users → Add user → Create new user**.
@@ -18,7 +20,7 @@
 ## 4. Conectar el panel
 1. Andá a **Project Settings → API**.
 2. Copiá el **Project URL** y la **anon public key**.
-3. Abrí [`panel/config.js`](./config.js) y reemplazá:
+3. Abrí [`public/panel/config.js`](../public/panel/config.js) y reemplazá:
    ```js
    window.SUPABASE_CONFIG = {
      url: "https://tu-proyecto.supabase.co",
@@ -31,6 +33,21 @@
 - El panel queda en `tusitio.com/panel`.
 - Entrás con el email y contraseña que creaste en el paso 3.
 - Desde **Proyectos** cargás tus trabajos, desde **Movimientos** tus ingresos y egresos, y en **Resumen** tenés el balance y el gráfico mensual.
+- El panel vive en `public/panel/` para que Vite lo copie tal cual al build: si estuviera en la raíz, Vercel no lo publicaría.
+
+## La pestaña Precios
+- **Lista de precios**: lo que cobrás hoy por cada servicio y la fecha del último ajuste. Si pasaron los meses
+  que marcaste en "Revisar cada" o la inflación publicada desde entonces llega al 5 %, aparece un aviso con el
+  precio sugerido y un botón para aplicarlo.
+- **Presupuestos**: qué cotizaste, qué incluía, por qué llegaste a ese precio, las horas y el estado. Con las
+  horas reales calcula cuánto te quedó la hora y te avisa si quedó debajo de tu tarifa.
+- **Precios de mercado**: salen de [`public/panel/referencias.js`](../public/panel/referencias.js). Son datos públicos
+  y se actualizan a mano cuando se hace una búsqueda nueva. Cada precio de tu lista se compara con la referencia
+  que elijas en "Comparar con".
+- La inflación (INDEC) la trae de [ArgentinaDatos](https://argentinadatos.com) y el dólar MEP de
+  [DolarAPI](https://dolarapi.com). Si alguna no responde, el panel anda igual y sólo faltan esos avisos.
+- **Tus datos reales no van en este repo** (es público): los precios y presupuestos viven en Supabase.
+  Para cargar los primeros de una vez hay un `.sql` aparte, fuera del repo.
 
 ## Más adelante: mostrar datos en la landing
 Cada proyecto tiene un campo `is_featured` y `featured_result` (ej. "Redujo tiempos de facturación 40%") pensados para marcar qué casos de éxito mostrar públicamente, sin exponer montos ni datos sensibles. Cuando quieras activarlo, avisame y armamos esa parte.
