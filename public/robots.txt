@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /panel
+
+Sitemap: https://bc-informatica.vercel.app/sitemap.xml
