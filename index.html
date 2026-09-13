@@ -3,16 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas para tu casa y tu empresa</title>
-<meta name="description" content="Detrás de BC Informática hay una persona, no un call center. Arreglo, enseño, asesoro y desarrollo sistemas a medida. Paraná, Entre Ríos y a distancia.">
-<meta name="keywords" content="BC Informática, Belén Analista en Sistemas, Service técnico Paraná, Reparación PC Paraná, Sistemas a medida, Clases computación Paraná, Asesoramiento informático">
+<title>BC Informática · Service técnico de PC y notebooks, sistemas a medida y clases en Paraná</title>
+<meta name="description" content="Service técnico y reparación de PC y notebooks en Paraná, Entre Ríos. Sistemas a medida para PyMEs, clases de computación y Excel, y asesoramiento. Diagnóstico sin cargo y presupuesto por escrito.">
 <meta name="theme-color" content="#121412">
+<link rel="canonical" href="https://bc-informatica.vercel.app/">
 <link rel="icon" type="image/jpeg" href="./logo.jpeg">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://bc-informatica.vercel.app/">
 <meta property="og:title" content="&lt;/BC&gt; INFORMÁTICA // Soluciones informáticas">
-<meta property="og:description" content="Soluciones informáticas para tu casa y tu empresa. Sin vueltas y en tu idioma. Paraná · Entre Ríos.">
-<meta property="og:image" content="./logo.jpeg">
+<meta property="og:description" content="Service técnico, sistemas a medida y clases en Paraná, Entre Ríos. Sin vueltas y en tu idioma.">
+<meta property="og:image" content="https://bc-informatica.vercel.app/assets/logo.jpeg">
 <meta property="og:locale" content="es_AR">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "BC Informática",
+  "description": "Service técnico y reparación de PC y notebooks, sistemas a medida, clases de computación y asesoramiento informático.",
+  "url": "https://bc-informatica.vercel.app/",
+  "image": "https://bc-informatica.vercel.app/assets/logo.jpeg",
+  "telephone": "+5493435038054",
+  "email": "bc.informatica.pna@gmail.com",
+  "founder": {"@type": "Person", "name": "Belén Cascone", "jobTitle": "Analista en Sistemas"},
+  "address": {"@type": "PostalAddress", "addressLocality": "Paraná", "addressRegion": "Entre Ríos", "addressCountry": "AR"},
+  "areaServed": [{"@type": "City", "name": "Paraná"}, {"@type": "State", "name": "Entre Ríos"}],
+  "sameAs": ["https://www.instagram.com/bc.informatica.pna"],
+  "paymentAccepted": "Efectivo, transferencia",
+  "knowsLanguage": "es"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>*{box-sizing:border-box}html{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -334,6 +353,27 @@ p{margin:0;max-width:62ch}
   .plan{grid-template-columns:1fr}
   .plan-side{border-left:0;border-top:1px solid rgba(198,255,0,.2)}
 }
+
+/* ============ FAQ ============ */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:760px}
+.faq details{
+  background:var(--surface);border:1px solid rgba(143,158,139,.16);border-radius:var(--r-lg);
+  transition:border-color .2s ease;
+}
+.faq details:hover,.faq details[open]{border-color:rgba(198,255,0,.42)}
+.faq summary{
+  list-style:none;cursor:pointer;padding:16px 20px;
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--f-display);font-weight:600;font-size:1rem;color:var(--cream);
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{
+  content:"+";margin-left:auto;flex:none;
+  font-family:var(--f-mono);font-weight:700;color:var(--lime);
+  transition:transform .18s ease;
+}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 20px 18px;font-size:14.4px;color:#c5ccbf}
 
 /* ============ CONTACT ============ */
 .channels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -690,6 +730,39 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
           <dt>Cambios</dt><dd>Si en el camino aparece algo que no estaba previsto, te consulto antes de seguir.</dd>
         </dl>
       </div>
+
+      <div class="sec">
+        <div class="sec-head">
+          <span class="tag">// Preguntas frecuentes</span>
+          <h2>Lo que más me preguntan</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>¿Cuánto tarda un service?</summary>
+            <p>En el día o en dos días. Cuando te paso el presupuesto ya te digo cuándo va a estar listo.</p>
+          </details>
+          <details>
+            <summary>¿Retirás y llevás el equipo?</summary>
+            <p>Sí, lo coordinamos por mensaje según lo que te quede cómodo. Si querés que lo busque y te lo devuelva en tu casa una vez listo, se suman $5.000 al precio final por las dos cosas.</p>
+          </details>
+          <details>
+            <summary>¿Cómo se paga?</summary>
+            <p>Por transferencia o en efectivo.</p>
+          </details>
+          <details>
+            <summary>¿El service tiene garantía?</summary>
+            <p>Sí, una semana. Si en esos días vuelve a aparecer el problema, escribime.</p>
+          </details>
+          <details>
+            <summary>¿Cobrás por mirar el equipo?</summary>
+            <p>No. El diagnóstico y el presupuesto son sin cargo, aunque después decidas no hacer el arreglo.</p>
+          </details>
+          <details>
+            <summary>¿Atendés fuera de Paraná?</summary>
+            <p>En persona, en Paraná y alrededores. Las clases, el asesoramiento, el desarrollo y el soporte remoto los hago online a todo el país.</p>
+          </details>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -737,20 +810,20 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
       </div>
 
       <div class="channels">
-        <a class="chan" id="chan-wa" href="#" target="_blank" rel="noopener">
+        <a class="chan" id="chan-wa" href="https://wa.me/5493435038054" target="_blank" rel="noopener">
           <span class="tag">// WhatsApp</span>
           <b>Mandame un mensaje</b>
-          <span id="wa-label">A confirmar</span>
+          <span id="wa-label">+54 9 343 503-8054</span>
         </a>
         <a class="chan" href="https://instagram.com/bc.informatica.pna" target="_blank" rel="noopener">
           <span class="tag">// Instagram</span>
           <b>Seguime y escribime</b>
           <span>@bc.informatica.pna</span>
         </a>
-        <a class="chan" id="chan-mail" href="#">
+        <a class="chan" id="chan-mail" href="mailto:bc.informatica.pna@gmail.com">
           <span class="tag">// Email</span>
           <b>Para algo más largo</b>
-          <span id="mail-label">A confirmar</span>
+          <span id="mail-label">bc.informatica.pna@gmail.com</span>
         </a>
       </div>
     </div>
@@ -797,6 +870,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
   <div class="inner">
     <span class="live"><i></i>Disponible</span>
     <span>BC Informática · Paraná, Entre Ríos</span>
+    <a href="https://wa.me/5493435038054" target="_blank" rel="noopener">WhatsApp +54 9 343 503-8054</a>
     <a href="https://instagram.com/bc.informatica.pna" target="_blank" rel="noopener">@bc.informatica.pna</a>
     <span class="push">© <span id="yr">2026</span> · Analista en Sistemas</span>
   </div>
@@ -822,6 +896,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
   var sweep  = document.getElementById("sweep");
   var crumb  = document.getElementById("crumb");
   var first  = true;
+  var homeTitle = document.title;
 
   function routeName(){
     var h = (location.hash || "").replace(/^#\/?/, "").trim();
@@ -844,7 +919,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 
     crumb.textContent = "~/bc-informatica/" + name + "." + EXT[name];
     document.title = name === "inicio"
-      ? "BC Informática"
+      ? homeTitle
       : name.charAt(0).toUpperCase() + name.slice(1).replace("-", " ") + " · BC Informática";
 
     closeMenu();
