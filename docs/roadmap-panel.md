@@ -9,7 +9,7 @@ abiertos en un lugar, con mirada de desarrolladora **y** de QA manual. No es un 
 genérico: es el panel que le falta a ella.
 
 **Estado:** sprint 01 (ordenar la casa) terminado el 14/9/2026: `app.js` partido en módulos y 72
-tests de Playwright. Falta publicarlo y usarlo un día real. Próximo: sprint 02 (datos). Se sumó el sprint 03 (barra
+tests de Playwright. Publicado el 14/9/2026 (PR #8); falta usarlo un día real. Próximo: sprint 02 (datos). Se sumó el sprint 03 (barra
 lateral e Inicio) y los siguientes corrieron un número.
 **Se construye con:** Claude Code, un sprint por sesión.
 
