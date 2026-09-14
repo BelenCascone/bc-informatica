@@ -41,7 +41,7 @@ crema `#FBF8E6`, gris `#8F9E8B`. Las variables CSS del panel están al principio
 |---|---|
 | Repo | https://github.com/BelenCascone/bc-informatica (**público**) |
 | Producción | https://bc-informatica.vercel.app — panel en https://bc-informatica.vercel.app/panel |
-| Hosting | Vercel, cuenta personal. Proyecto: _a completar (nombre y link al dashboard)_ |
+| Hosting | Vercel, cuenta personal (`aceituna`), proyecto `bc-informatica`: https://vercel.com/aceituna/bc-informatica |
 | Base de datos | Supabase, proyecto `bc-informatica`, ref `dzerereqvsxrbonnotcy`, región `us-west-2` |
 | Panel del proveedor | https://supabase.com/dashboard/project/dzerereqvsxrbonnotcy |
 | Carpeta local | `C:\Users\belen\OneDrive\Escritorio\BC INFORMATICA` |
@@ -64,6 +64,15 @@ cada una, nunca cuál es.
 | Cuenta de Vercel | Bitwarden → "Vercel" | solo yo |
 | Gmail del negocio | Bitwarden → "Gmail BC" | solo yo |
 | PIN del panel | No se guarda: es por dispositivo y se elige al activarlo | — |
+
+- **Verificación en dos pasos** activada en Bitwarden, GitHub, Gmail, Vercel y Supabase, con una app
+  de autenticación en el celular. Los códigos de recuperación de cada cuenta están en las notas de su
+  ítem en Bitwarden.
+- **La contraseña maestra de Bitwarden y su código de recuperación** están solo en papel, en casa.
+  Si se pierden, Bitwarden no los puede recuperar.
+- **Registro cerrado en Supabase:** "Allow new users to sign up" apagado (revisado el 14/9/2026).
+- **GitHub:** escaneo de claves y Push protection activos en el repo.
+- Bitwarden está en el **plan gratis**, que alcanza para todo esto.
 
 Claves que usa el código:
 
@@ -211,6 +220,5 @@ no existen.
 - **Supabase avisa que la protección de contraseñas filtradas está apagada** (Auth → contraseñas).
   Es posible que no esté disponible en el plan gratis; mientras tanto, contraseña larga generada por
   Bitwarden.
-- **Falta completar el proyecto de Vercel** (nombre y link al dashboard) en la sección 3.
 - **No hay tests.** Los de Playwright llegan con los sprints del board.
 - **`is_featured`, `featured_result` y `publishable` no se usan todavía** en la landing.
