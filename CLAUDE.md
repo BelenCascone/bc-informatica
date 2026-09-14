@@ -51,7 +51,9 @@ escritorio; Inicio, Proyectos y Métricas tienen que leerse bien en el celular.
   planeado en el roadmap (sección 6). Si hace falta algo que no está, primero se agrega al roadmap y
   se lo consultás a Belén.
 - Toda tabla nueva lleva `owner_id uuid not null default auth.uid()`, RLS activado y la política
-  `owner_id = auth.uid()` para todo, en el mismo `.sql` que la crea. Sin excepción.
+  `owner_id = auth.uid()` para todo, en el mismo `.sql` que la crea. Sin excepción. La única
+  variante es `task_events`: el dueño solo la lee, porque la escribe un trigger (decidido por Belén
+  el 14/9/2026).
 - Todo cambio a la base queda como `.sql` en `supabase/`. Nunca un cambio a mano en el panel de
   Supabase sin su archivo en el repo. Los `.sql` se escriben para poder correrse dos veces sin
   romper (`if not exists`).

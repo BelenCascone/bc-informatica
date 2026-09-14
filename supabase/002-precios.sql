@@ -1,6 +1,5 @@
--- BC Informática — Panel privado: lista de precios y presupuestos
--- Se corre UNA vez, después de schema.sql:
--- Supabase > SQL Editor > New query > pegar todo > Run
+-- BC Informática — Panel privado · 002: lista de precios y presupuestos
+-- Va después de 001. Se puede correr dos veces sin romper nada.
 
 -- Lista de precios: lo que cobrás hoy por cada servicio.
 -- "updated_on" es la fecha del último ajuste: de ahí sale el aviso de inflación.
@@ -45,8 +44,10 @@ create index if not exists quotes_date_idx on quotes(date);
 alter table price_items enable row level security;
 alter table quotes enable row level security;
 
+drop policy if exists "price_items_owner_all" on price_items;
 create policy "price_items_owner_all" on price_items
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 
+drop policy if exists "quotes_owner_all" on quotes;
 create policy "quotes_owner_all" on quotes
   for all using (owner_id = auth.uid()) with check (owner_id = auth.uid());

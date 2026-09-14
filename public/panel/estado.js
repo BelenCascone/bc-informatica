@@ -13,6 +13,9 @@ export const state = {
 const renders = [];
 export const alCambiarDatos = (render) => renders.push(render);
 
+// El error que da Supabase cuando una tabla todavía no existe (falta correr su .sql).
+export const faltaTabla = (err) => err && (err.code === "42P01" || err.code === "PGRST205" || /does not exist|schema cache/i.test(err.message));
+
 export async function loadAll() {
   const [
     { data: projects, error: pErr },
@@ -27,8 +30,7 @@ export async function loadAll() {
   ]);
   if (pErr) toast("Error cargando proyectos: " + pErr.message);
   if (tErr) toast("Error cargando movimientos: " + tErr.message);
-  // Si todavía no se corrió supabase/precios.sql, la pestaña Precios lo avisa en vez de mostrar un error.
-  const faltaTabla = (err) => err && (err.code === "42P01" || err.code === "PGRST205" || /does not exist|schema cache/i.test(err.message));
+  // Si todavía no se corrió supabase/002-precios.sql, la pestaña Precios lo avisa en vez de mostrar un error.
   state.preciosOk = !faltaTabla(piErr) && !faltaTabla(qErr);
   if (piErr && !faltaTabla(piErr)) toast("Error cargando precios: " + piErr.message);
   if (qErr && !faltaTabla(qErr)) toast("Error cargando presupuestos: " + qErr.message);
@@ -36,7 +38,7 @@ export async function loadAll() {
   state.transactions = transactions || [];
   state.priceItems = priceItems || [];
   state.quotes = quotes || [];
-  // Si todavía no se corrió supabase/presupuestos-pdf.sql, los presupuestos vienen sin la columna "doc".
+  // Si todavía no se corrió supabase/003-presupuestos-pdf.sql, los presupuestos vienen sin la columna "doc".
   if (state.quotes.length) state.docOk = "doc" in state.quotes[0];
   renderAll();
 }

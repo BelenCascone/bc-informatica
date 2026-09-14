@@ -47,10 +47,11 @@ Módulos ES sin compilar, todos en `public/panel/` y pedidos con ruta absoluta (
 | `app.js` | Arranque: importa las vistas, conecta las pestañas y abre la sesión |
 | `conexion.js` | Cliente de Supabase y el cifrado de la entrada con PIN |
 | `sesion.js` | Login, PIN, Bloquear y Salir |
-| `estado.js` | `state`, `loadAll()` (trae las cuatro tablas) y `borrar()` |
+| `estado.js` | `state`, `loadAll()` (trae las cuatro tablas), `borrar()` y `faltaTabla()` |
 | `ui.js` · `formato.js` | Modal y aviso de abajo · formatos de plata, fechas y texto |
 | `calculos.js` | Inflación, comparación con el mercado, tarifa por hora, precio por hora |
 | `excel.js` | Excel de respaldo |
+| `respaldo.js` | Respaldo en JSON: todas las tablas, completas, pedidas a la base en el momento |
 | `vistas/resumen.js` · `proyectos.js` · `movimientos.js` · `precios.js` · `presupuestos.js` | Una pestaña por archivo (Presupuestos está dentro de la pestaña Precios) |
 | `presupuesto-doc.js` | Plantillas de texto y el documento con la marca que se guarda como PDF |
 
@@ -142,8 +143,10 @@ npm run test:build                # algunos casos contra el build de producción
 **Publicar:** push (o merge de PR) a `main` → Vercel compila y publica solo. Cada rama con PR
 tiene su dirección de prueba de Vercel.
 
-**Base de datos:** los cambios se hacen con un `.sql` en `supabase/` que se corre en
-Supabase → SQL Editor → New query → pegar → Run. La guía completa desde cero está en
+**Base de datos:** cada cambio es un `.sql` numerado en `supabase/` (`005-…` es el siguiente), que
+se puede correr dos veces sin romper nada. Desde el sprint 02 se aplican con la herramienta de
+migraciones de Supabase (el conector de Supabase de Claude Code), con el ok de Belén antes de cada
+uno: así quedan en Supabase → Database → Migrations. La guía completa desde cero está en
 [`supabase/SETUP.md`](supabase/SETUP.md).
 
 **Qué se rompe seguido:**
@@ -163,28 +166,40 @@ Supabase → SQL Editor → New query → pegar → Run. La guía completa desde
 - **Ventanas emergentes bloqueadas.** El PDF del presupuesto se abre en una pestaña nueva; si el
   navegador la bloquea, el panel avisa.
 - **Un `.sql` sin correr.** El panel no se rompe: muestra un recuadro que dice qué archivo falta
-  correr (pasa con `precios.sql` y `presupuestos-pdf.sql`).
+  correr (pasa con `002-precios.sql` y `003-presupuestos-pdf.sql`; el respaldo JSON avisa si falta
+  `004-board.sql`).
 
 ## 6. Modelo de datos
 
-Cuatro tablas en `public`, todas con `owner_id uuid default auth.uid()` y la misma política:
+Once tablas en `public`, todas con `owner_id uuid default auth.uid()` y la misma política:
 cada fila solo la ve y la toca quien la creó (`owner_id = auth.uid()`, para todo). El navegador
-nunca manda `owner_id`: lo pone la base.
+nunca manda `owner_id`: lo pone la base. La única variante es `task_events`: el dueño solo la lee.
 
-Se crearon corriendo a mano, en este orden:
+Se crean con estos archivos, en este orden:
 
-1. [`supabase/schema.sql`](supabase/schema.sql) → `projects`, `transactions`
-2. [`supabase/precios.sql`](supabase/precios.sql) → `price_items`, `quotes`
-3. [`supabase/presupuestos-pdf.sql`](supabase/presupuestos-pdf.sql) → columna `quotes.doc`
+1. [`supabase/001-proyectos-y-movimientos.sql`](supabase/001-proyectos-y-movimientos.sql) → `projects`, `transactions`
+2. [`supabase/002-precios.sql`](supabase/002-precios.sql) → `price_items`, `quotes`
+3. [`supabase/003-presupuestos-pdf.sql`](supabase/003-presupuestos-pdf.sql) → columna `quotes.doc`
+4. [`supabase/004-board.sql`](supabase/004-board.sql) → columnas nuevas de `projects` y las tablas
+   del board: `sprints`, `tasks`, `task_events`, `qa_cases`, `qa_runs`, `bugs`, `journal`, con sus
+   triggers
 
-Supabase **no** tiene registro de qué se corrió (no hay historial de migraciones): el orden de
-arriba es la única fuente. Al 14/9/2026 los tres están aplicados en producción.
+Hasta el sprint 02 se llamaban `schema.sql`, `precios.sql` y `presupuestos-pdf.sql` y se corrían a
+mano, sin historial. El estado de cada uno en producción está en la sección 8.
 
 ### `projects` — trabajos y clientes
 
 `name`, `client_name`, `status` (`activo` · `pausado` · `finalizado`), `start_date`, `end_date`,
-`description`.
+`description`. Desde `004`, la mirada humana y el board:
 
+- `pulso` (`en_llamas` · `andando` · `frenado` · `dormido`, por defecto `andando`), `proximo_paso`,
+  `bloqueante`, `tipo` (`cliente` · `propio` · `contenido`, por defecto `cliente`), `repo_url`,
+  `prod_url`.
+- `ultimo_movimiento` lo escribe **solo la base**: cualquier cambio de trabajo del proyecto (tareas,
+  sprints, bugs, corridas de QA, bitácora) y los cambios de pulso, próximo paso o bloqueante. La
+  plata no cuenta. Si el panel lo manda, la base lo ignora.
+- Si se borra un proyecto, se borran sus sprints, tareas, casos de QA y bugs; la bitácora y los
+  movimientos quedan sin proyecto.
 - `is_featured` y `featured_result` están pensados para mostrar casos de éxito en la landing sin
   montos ni datos del cliente. Todavía no se usan.
 
@@ -222,19 +237,44 @@ arriba es la única fuente. Al 14/9/2026 los tres están aplicados en producció
 - El número de presupuesto es correlativo por año (`2026-001`, `2026-002`…) y vive en `doc.numero`.
 - `publishable` marca si se puede contar como caso en la landing, sin datos del cliente.
 
+### Las tablas del board (`004-board.sql`)
+
+Todavía no se ven en el panel: las usan las vistas de los sprints 03 a 09. El modelo con sus reglas
+está en el roadmap, sección 6.
+
+- **`sprints`**: `project_id`, `numero`, `nombre`, `objetivo`, `desde`, `hasta`, `estado`
+  (`planeado` · `activo` · `cerrado`). Como mucho un sprint activo por proyecto; el número no se
+  repite dentro del proyecto.
+- **`tasks`**: `project_id`, `sprint_id` (opcional, del mismo proyecto), `titulo`, `detalle`, `tipo`
+  (`feature` · `bug` · `chore` · `qa`, por defecto `feature`), `estado` (`backlog` · `todo` ·
+  `doing` · `blocked` · `qa` · `ready` · `done`, por defecto `backlog`), `prioridad` (`alta` ·
+  `media` · `baja`, por defecto `media`), `estimado_horas`, `orden`.
+  - `qa` quiere decir que ya está en la dirección de prueba (staging); `ready`, que pasó la prueba y
+    está lista para producción; `done`, que está publicada. La cola de QA son las tareas en `qa`.
+  - `creada`, `empezada` (primera vez en `doing`), `pasada_a_qa` y `cerrada` (última vez en `qa` y en
+    `done`; `cerrada` se vacía si sale de `done`) las pone **la base**. Si el panel las manda, las
+    ignora.
+  - Si se borra su sprint, la tarea queda sin sprint.
+- **`task_events`**: `task_id`, `estado_anterior`, `estado_nuevo`, `fecha`. La escribe un trigger en
+  cada alta y cada cambio de estado; desde el panel **solo se lee**. De acá salen todas las métricas.
+- **`qa_cases`**: `project_id`, `titulo`, `pasos`, `resultado_esperado`, `area`, `activo`.
+- **`qa_runs`**: `qa_case_id`, `task_id` (opcional), `fecha`, `resultado` (`pasa` · `falla` ·
+  `bloqueado`), `nota`. Se borran con su caso.
+- **`bugs`**: `project_id`, `task_origen` (opcional), `titulo`, `severidad` (`baja` · `media` ·
+  `alta` · `critica`, por defecto `media`), `pasos_para_reproducir`, `estado` (`abierto` ·
+  `en_arreglo` · `a_reverificar` · `cerrado`), `encontrado_en`, `cerrado_en` (lo pone la base al
+  cerrar y lo vacía si se reabre).
+  - **Un bug cargado sobre una tarea en `qa` la devuelve sola a `doing`.** Mientras tenga bugs sin
+    cerrar, la tarea está "con errores": se calcula, no es un campo.
+- **`journal`**: `fecha` (por defecto, hoy en Argentina), `project_id` (opcional), `texto`.
+
 ### Lo que no está en la base
 
 - **Precios de mercado**: `public/panel/referencias.js`, datos públicos que se actualizan a mano.
 - **Plantillas de texto de los presupuestos**: `public/panel/presupuesto-doc.js`.
 - **Datos reales** (precios, presupuestos, clientes): solo en Supabase. Para cargarlos de una vez
-  hay un `.sql` aparte, **fuera del repo**.
-
-### Planeado, todavía no creado
-
-El roadmap (sección 6) agrega columnas a `projects` (`pulso`, `proximo_paso`, `bloqueante`, `tipo`,
-`repo_url`, `prod_url`, `ultimo_movimiento`) y siete tablas nuevas: `sprints`, `tasks`,
-`task_events`, `qa_cases`, `qa_runs`, `bugs`, `journal`. Se crean en el sprint 02. Hasta entonces
-no existen.
+  hay un `.sql` aparte, **fuera del repo**. Los 6 proyectos reales del board se cargan en el
+  sprint 04, cuando la ficha muestre pulso y próximo paso.
 
 ## 7. Decisiones tomadas
 
@@ -257,11 +297,16 @@ no existen.
 | 14/9/2026 | Tests de Playwright contra el Supabase de producción, con un usuario de prueba | Sin base aparte que mantener. RLS aísla al usuario de prueba; el prefijo `QA · ` y la traba del arranque evitan borrar datos reales. |
 | 14/9/2026 | El panel pasa a barra lateral (Trabajo / Plata), con una dirección por vista e Inicio como pantalla de entrada (sprint 03) | Con diez vistas las pestañas no entran y el panel se parecía a la landing. Inicio absorbe "Hoy". Detalle en el roadmap, secciones 4, 5 y 7. |
 | 14/9/2026 | `supabase-js` fijado en 2.116.0 | Con `@2` podía cambiar solo cualquier día. Es la versión que `@2` bajaba ese día: no cambia nada. |
+| 14/9/2026 | Los `.sql` van numerados, se pueden correr dos veces y se aplican con la herramienta de migraciones de Supabase | Queda el orden en el nombre y el historial en Supabase. Antes el orden estaba solo en este archivo. |
+| 14/9/2026 | `task_events`, las fechas del ciclo de las tareas, `cerrado_en` y `ultimo_movimiento` los escribe solo la base (triggers) | Las métricas salen de eventos: si se pudieran tocar desde el panel, dejarían de ser confiables. |
+| 14/9/2026 | Ciclo de testing por sprint: `qa` (en staging) → `ready` (lista para prod) → `done` (publicada); un bug sobre una tarea en `qa` la devuelve a `doing` | Se prueba en la dirección de prueba antes del merge, y cada error queda registrado. |
+| 14/9/2026 | Respaldo en JSON desde el sprint 02 (regla 7 del roadmap) | El Excel es para mirar; el JSON es la copia fiel de todas las tablas, antes de cargar datos del board. |
 
 ## 8. Pendientes conocidos
 
-- **Los `.sql` están sueltos, sin número de orden y sin registro en Supabase.** Se ordenan en el
-  sprint 02, antes de sumar tablas nuevas.
+- **Sprint 02 en curso:** `004-board.sql` todavía **no** está aplicado en producción, y los
+  `001` a `003` (aplicados a mano antes del sprint 02) todavía no figuran en el historial de
+  migraciones de Supabase.
 - **Errores confirmados en la corrida de base del sprint 01** (detalle en
   [`docs/casos/sprint-01.md`](docs/casos/sprint-01.md)). Hay que decidir cuándo se arreglan; los
   tests están marcados "así anda hoy" y avisan cuando cambie:

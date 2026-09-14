@@ -319,7 +319,10 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
       <div class="panel">
         <div class="panel-head">
           <h2>// Ingresos vs egresos — últimos 6 meses</h2>
-          <button class="btn btn--ghost" data-excel title="Movimientos, proyectos, presupuestos y precios en un .xlsx, para Excel o Google Drive">Descargar Excel</button>
+          <div class="filters">
+            <button class="btn btn--ghost" data-excel title="Movimientos, proyectos, presupuestos y precios en un .xlsx, para Excel o Google Drive">Descargar Excel</button>
+            <button class="btn btn--ghost" data-respaldo title="Todas las tablas del panel, completas, en un .json: la copia para volver a cargar los datos">Descargar respaldo (JSON)</button>
+          </div>
         </div>
         <canvas id="chart-mensual" height="90"></canvas>
       </div>
@@ -395,7 +398,7 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
       <div class="panel setup-box" id="precios-setup" hidden>
         <h2>// Falta un paso en Supabase</h2>
         <p>Para usar esta pestaña hay que crear dos tablas nuevas: en Supabase andá a <b>SQL Editor → New query</b>,
-        pegá el contenido de <code>supabase/precios.sql</code> y tocá <b>Run</b>. Después recargá esta página.</p>
+        pegá el contenido de <code>supabase/002-precios.sql</code> y tocá <b>Run</b>. Después recargá esta página.</p>
       </div>
 
       <div class="kpis">
@@ -426,7 +429,7 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
           </div>
         </div>
         <p class="setup-inline" id="presu-doc-setup" hidden>Para que se guarde el texto de cada PDF (y lo puedas volver a generar igual),
-          falta correr <code>supabase/presupuestos-pdf.sql</code> en Supabase: <b>SQL Editor → New query</b>, pegar y <b>Run</b>.</p>
+          falta correr <code>supabase/003-presupuestos-pdf.sql</code> en Supabase: <b>SQL Editor → New query</b>, pegar y <b>Run</b>.</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Fecha</th><th>Trabajo</th><th>Cliente</th><th>Precio</th><th>Por hora</th><th>Estado</th><th></th></tr></thead>

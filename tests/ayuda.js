@@ -10,20 +10,38 @@ export { expect };
 
 const config = readFileSync(new URL("../public/panel/config.js", import.meta.url), "utf8");
 export const SUPABASE_URL = config.match(/url:\s*"([^"]+)"/)[1];
-const ANON_KEY = config.match(/anonKey:\s*"([^"]+)"/)[1];
+export const ANON_KEY = config.match(/anonKey:\s*"([^"]+)"/)[1];
 export const SESION_KEY = `sb-${new URL(SUPABASE_URL).hostname.split(".")[0]}-auth-token`;
 export const PIN_KEY = "bc-panel-pin";
 
 export const PREFIJO = "QA · ";
 export const qa = (texto) => PREFIJO + texto;
 
-// Columna que lleva el prefijo en cada tabla, en el orden en que se borran.
+// Columna que lleva el prefijo en cada tabla, en el orden en que se borran. task_events y qa_runs no
+// tienen texto propio: se van solas al borrar su tarea o su caso de QA.
 export const TABLAS = [
+  ["journal", "texto"],
+  ["bugs", "titulo"],
+  ["qa_cases", "titulo"],
+  ["tasks", "titulo"],
+  ["sprints", "nombre"],
   ["quotes", "title"],
   ["price_items", "name"],
   ["transactions", "description"],
   ["projects", "name"],
 ];
+
+// Las tablas del board existen desde supabase/004-board.sql. Mientras no se corra, la limpieza y el
+// control de arranque las saltean en vez de cortar toda la corrida.
+const noExiste = (err) => err.message.includes("PGRST205");
+async function siExiste(pedido) {
+  try {
+    return await pedido();
+  } catch (err) {
+    if (noExiste(err)) return null;
+    throw err;
+  }
+}
 
 export const EMAIL = process.env.PANEL_QA_EMAIL;
 const PASSWORD = process.env.PANEL_QA_PASSWORD;
@@ -63,13 +81,12 @@ export async function rest(metodo, ruta, cuerpo, token = sesionCompartida().acce
 
 const conPrefijo = (col) => `${col}=like.${encodeURIComponent(PREFIJO + "*")}`;
 
-// Carga filas directo en la base. El prefijo se agrega solo si falta.
+// Carga filas directo en la base. El prefijo se agrega solo si falta (y si la tabla tiene dónde).
 export async function insertar(tabla, filas) {
   const col = Object.fromEntries(TABLAS)[tabla];
-  const lista = (Array.isArray(filas) ? filas : [filas]).map((f) => ({
-    ...f,
-    [col]: String(f[col] ?? "").startsWith(PREFIJO) ? f[col] : qa(f[col] ?? "sin nombre"),
-  }));
+  const lista = (Array.isArray(filas) ? filas : [filas]).map((f) =>
+    col ? { ...f, [col]: String(f[col] ?? "").startsWith(PREFIJO) ? f[col] : qa(f[col] ?? "sin nombre") } : f
+  );
   const columnas = [...new Set(lista.flatMap(Object.keys))].join(",");
   const creadas = await rest("POST", `${tabla}?columns=${columnas}`, lista);
   return Array.isArray(filas) ? creadas : creadas[0];
@@ -78,15 +95,15 @@ export async function insertar(tabla, filas) {
 export const leer = (tabla, filtro = "") => rest("GET", `${tabla}?select=*${filtro ? "&" + filtro : ""}`);
 
 export async function limpiar() {
-  for (const [tabla, col] of TABLAS) await rest("DELETE", `${tabla}?${conPrefijo(col)}`);
+  for (const [tabla, col] of TABLAS) await siExiste(() => rest("DELETE", `${tabla}?${conPrefijo(col)}`));
 }
 
 // Filas de la cuenta que NO son de prueba. Si hay alguna, los tests no arrancan.
 export async function filasAjenas() {
   const ajenas = [];
   for (const [tabla, col] of TABLAS) {
-    const filas = await rest("GET", `${tabla}?select=id&or=(${col}.is.null,${col}.not.like.${encodeURIComponent(`"${PREFIJO}*"`)})`);
-    if (filas.length) ajenas.push(`${tabla}: ${filas.length}`);
+    const filas = await siExiste(() => rest("GET", `${tabla}?select=id&or=(${col}.is.null,${col}.not.like.${encodeURIComponent(`"${PREFIJO}*"`)})`));
+    if (filas?.length) ajenas.push(`${tabla}: ${filas.length}`);
   }
   return ajenas;
 }
