@@ -66,6 +66,10 @@ vercel.json         → reenvía todas las rutas a index.html
 
 El deploy es automático: cada push a `main` lo publica Vercel.
 
+Cómo está armado todo, dónde vive, qué decisiones se tomaron y qué falta:
+[`BASE-CONOCIMIENTO.md`](BASE-CONOCIMIENTO.md). El plan del panel está en
+[`docs/roadmap-panel.md`](docs/roadmap-panel.md).
+
 ---
 
 ## 📱 Contacto & Redes

@@ -1,4 +1,4 @@
-// Datos del proyecto Supabase (ver panel/SETUP.md para cómo obtenerlos).
+// Datos del proyecto Supabase (ver supabase/SETUP.md para cómo obtenerlos).
 // El "anon key" es pública por diseño: la protección real la da Row Level
 // Security en la base (ver supabase/schema.sql), no el secreto de esta clave.
 window.SUPABASE_CONFIG = {
