@@ -197,6 +197,54 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
 .check input{accent-color:var(--lime);width:16px;height:16px}
 .src a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .src a:hover{color:var(--lime)}
+.setup-inline{margin:-4px 0 14px;padding:10px 12px;border-radius:var(--r);border:1px solid rgba(255,193,7,.4);font-size:13px}
+.setup-inline code{font-family:var(--f-mono);font-size:12px;color:var(--lime)}
+
+/* ---------- PIN ---------- */
+.pin-input{text-align:center;font-size:24px!important;letter-spacing:.5em;padding:12px!important}
+.link-btn{display:block;margin:14px auto 0;background:none;border:none;color:var(--muted);font-family:var(--f-mono);
+  font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link-btn:hover{color:var(--lime)}
+.login-box .check{font-size:12.5px;color:var(--muted)}
+@media (max-width:640px){.btn--pin{display:none}}
+
+/* ---------- presupuesto con PDF ---------- */
+.modal--doc{max-width:880px;padding-bottom:0}
+.form-sec{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--lime);margin:22px 0 12px;padding-top:14px;border-top:1px solid var(--hair-soft)}
+#presu-form > .form-sec:first-child{margin-top:0;padding-top:0;border-top:none}
+.form-ayuda{font-size:12.5px;color:var(--muted);margin:-4px 0 14px;line-height:1.5}
+.form-ayuda b{color:var(--cream)}
+.field input:not([type=checkbox]),.field textarea{font-size:13.5px}
+.field-row--4{grid-template-columns:1fr 1.2fr 1.2fr 1fr}
+.items{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.item-row{display:grid;grid-template-columns:1.6fr 1.6fr 64px 110px 104px 30px;gap:8px;align-items:center}
+.item-row input{width:100%;background:var(--ground-deep);border:1px solid var(--hair-soft);color:var(--cream);
+  border-radius:var(--r);padding:8px 10px;font-size:13px;outline:none;min-width:0}
+.item-row input:focus{border-color:var(--lime)}
+.item-row .importe{text-align:right;font-size:12.5px}
+.items-vacio{font-size:13px;margin:0;padding:10px 0}
+.descuento{display:grid;grid-template-columns:1fr 64px;gap:6px}
+.items-add{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.items-add select{flex:1;min-width:220px;padding:8px 10px;font-size:13px;background:var(--ground-deep);
+  border:1px solid var(--hair-soft);color:var(--cream);border-radius:var(--r)}
+.totales{display:flex;justify-content:flex-end;gap:18px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12.5px;
+  color:var(--muted);margin:-2px 0 14px}
+.totales b{color:var(--cream)}
+.totales .total b{color:var(--lime);font-size:16px}
+.interno{margin-top:18px;border:1px dashed var(--hair-soft);border-radius:var(--r);padding:0 12px}
+.interno summary{cursor:pointer;font-family:var(--f-mono);font-size:11.5px;color:var(--muted);padding:12px 0}
+.interno[open]{padding-bottom:4px}
+.actions--sticky{position:sticky;bottom:0;background:var(--surface);padding:14px 0 20px;margin-top:10px!important;
+  border-top:1px solid var(--hair-soft)}
+@media (max-width:700px){
+  .field-row--4{grid-template-columns:1fr 1fr}
+  .item-row{grid-template-columns:1fr 1fr;padding-bottom:10px;border-bottom:1px solid var(--hair-soft)}
+  .item-row input[data-k=concepto],.item-row input[data-k=detalle]{grid-column:1 / -1}
+  .item-row .importe{text-align:left}
+  .item-row .icon-btn{justify-self:end;padding:4px 12px}
+  .actions--sticky{flex-wrap:wrap}
+}
 
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-2);
   border:1px solid var(--hair-soft);color:var(--cream);padding:10px 18px;border-radius:var(--r);
@@ -209,6 +257,15 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
 <div id="login-view">
   <div class="login-box">
     <span class="iso">&lt;/BC&gt; PANEL</span>
+    <form id="pin-form" hidden>
+      <div class="field">
+        <label for="pin">Tu PIN</label>
+        <input id="pin" class="pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
+      </div>
+      <button class="btn btn--primary btn--full" type="submit" id="pin-btn">Entrar</button>
+      <p class="error-msg" id="pin-error" hidden></p>
+      <button type="button" class="link-btn" id="pin-olvido">Entrar con email y contraseña</button>
+    </form>
     <form id="login-form">
       <div class="field">
         <label for="email">Email</label>
@@ -218,6 +275,7 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
         <label for="password">Contraseña</label>
         <input id="password" type="password" autocomplete="current-password" required>
       </div>
+      <label class="check"><input type="checkbox" id="login-pin" checked> La próxima vez, entrar con un PIN en este dispositivo</label>
       <button class="btn btn--primary btn--full" type="submit" id="login-btn">Entrar</button>
       <p class="error-msg" id="login-error" hidden></p>
     </form>
@@ -235,6 +293,7 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
     </nav>
     <div class="user">
       <span id="user-email"></span>
+      <button class="btn btn--ghost btn--pin" id="pin-toggle-btn">Activar PIN</button>
       <button class="btn btn--ghost" id="logout-btn">Salir</button>
     </div>
   </div>
@@ -258,7 +317,10 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
       </div>
 
       <div class="panel">
-        <h2>// Ingresos vs egresos — últimos 6 meses</h2>
+        <div class="panel-head">
+          <h2>// Ingresos vs egresos — últimos 6 meses</h2>
+          <button class="btn btn--ghost" data-excel title="Movimientos, proyectos, presupuestos y precios en un .xlsx, para Excel o Google Drive">Descargar Excel</button>
+        </div>
         <canvas id="chart-mensual" height="90"></canvas>
       </div>
 
@@ -363,6 +425,8 @@ textarea{width:100%;background:var(--ground-deep);border:1px solid var(--hair-so
             <button class="btn btn--primary" id="btn-nuevo-presu">+ Nuevo presupuesto</button>
           </div>
         </div>
+        <p class="setup-inline" id="presu-doc-setup" hidden>Para que se guarde el texto de cada PDF (y lo puedas volver a generar igual),
+          falta correr <code>supabase/presupuestos-pdf.sql</code> en Supabase: <b>SQL Editor → New query</b>, pegar y <b>Run</b>.</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Fecha</th><th>Trabajo</th><th>Cliente</th><th>Precio</th><th>Por hora</th><th>Estado</th><th></th></tr></thead>

@@ -1,4 +1,5 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { plantilla, pendientes, calcularTotales, documentoHTML } from "/panel/presupuesto-doc.js";
 
 const { url, anonKey } = window.SUPABASE_CONFIG || {};
 const configOk = Boolean(url && anonKey && !url.includes("PEGA_ACA") && !anonKey.includes("PEGA_ACA"));
@@ -8,10 +9,122 @@ if (!configOk) {
     "Falta configurar panel/config.js con la URL y la anon key de Supabase.";
   document.getElementById("login-btn").disabled = true;
 }
-const supabase = createClient(
-  configOk ? url : "https://placeholder.supabase.co",
-  configOk ? anonKey : "placeholder-anon-key"
-);
+const supabaseUrl = configOk ? url : "https://placeholder.supabase.co";
+
+// ---------- entrada rápida con PIN ----------
+// Sin PIN, la sesión queda guardada en el navegador como siempre (localStorage).
+// Con PIN, la sesión abierta vive sólo en la pestaña (sessionStorage) y en el dispositivo
+// queda guardado el token de sesión cifrado con una clave que sale del PIN: sin el PIN no sirve.
+const SESION_KEY = `sb-${new URL(supabaseUrl).hostname.split(".")[0]}-auth-token`; // la misma que usa Supabase por defecto
+const PIN_KEY = "bc-panel-pin";
+const PIN_CLAVE_KEY = "bc-panel-pin-clave";
+const PIN_INTENTOS = 5;
+
+const leerPin = () => {
+  try { return JSON.parse(localStorage.getItem(PIN_KEY)); } catch { return null; }
+};
+const conPin = () => Boolean(leerPin());
+const almacen = {
+  getItem: (k) => (conPin() ? sessionStorage : localStorage).getItem(k),
+  setItem: (k, v) => (conPin() ? sessionStorage : localStorage).setItem(k, v),
+  removeItem: (k) => { sessionStorage.removeItem(k); localStorage.removeItem(k); },
+};
+
+const aB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const deB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+async function derivarClave(pin, sal) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: sal, iterations: 310000, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]
+  );
+}
+
+// Si la pestaña ya estaba desbloqueada (recargaste la página), la clave sigue en sessionStorage.
+let clavePin = null;
+const clavePinLista = (async () => {
+  const cruda = sessionStorage.getItem(PIN_CLAVE_KEY);
+  if (cruda && conPin()) clavePin = await crypto.subtle.importKey("raw", deB64(cruda), "AES-GCM", true, ["encrypt", "decrypt"]);
+})().catch(() => {});
+
+async function recordarClave(clave) {
+  clavePin = clave;
+  sessionStorage.setItem(PIN_CLAVE_KEY, aB64(await crypto.subtle.exportKey("raw", clave)));
+}
+
+// Supabase renueva el token cada tanto: cada renovación se vuelve a guardar cifrada.
+async function guardarSesionCifrada(refreshToken) {
+  await clavePinLista;
+  const reg = leerPin();
+  if (!reg || !clavePin || !refreshToken) return;
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, clavePin, new TextEncoder().encode(refreshToken));
+  localStorage.setItem(PIN_KEY, JSON.stringify({ ...reg, iv: aB64(iv), data: aB64(data), intentos: 0 }));
+}
+
+const supabase = createClient(supabaseUrl, configOk ? anonKey : "placeholder-anon-key", {
+  auth: { storage: almacen, storageKey: SESION_KEY },
+});
+supabase.auth.onAuthStateChange((_evento, sesion) => {
+  // Fuera del callback: Supabase recomienda no hacer trabajo async adentro.
+  if (sesion?.refresh_token && conPin()) setTimeout(() => guardarSesionCifrada(sesion.refresh_token), 0);
+});
+
+async function activarPin(pin) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return false;
+  const sal = crypto.getRandomValues(new Uint8Array(16));
+  const clave = await derivarClave(pin, sal);
+  const actual = localStorage.getItem(SESION_KEY);
+  if (actual) sessionStorage.setItem(SESION_KEY, actual);
+  localStorage.setItem(PIN_KEY, JSON.stringify({ sal: aB64(sal), largo: pin.length, intentos: 0 }));
+  localStorage.removeItem(SESION_KEY);
+  await recordarClave(clave);
+  await guardarSesionCifrada(session.refresh_token);
+  return true;
+}
+
+// Vuelve a como era antes: si hay una sesión abierta en esta pestaña, queda guardada en el navegador.
+function desactivarPin() {
+  const actual = sessionStorage.getItem(SESION_KEY);
+  localStorage.removeItem(PIN_KEY);
+  sessionStorage.removeItem(PIN_CLAVE_KEY);
+  clavePin = null;
+  if (actual) localStorage.setItem(SESION_KEY, actual);
+}
+
+async function entrarConPin(pin) {
+  const reg = leerPin();
+  if (!reg?.data) return showLogin();
+  let token;
+  try {
+    const clave = await derivarClave(pin, deB64(reg.sal));
+    const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: deB64(reg.iv) }, clave, deB64(reg.data));
+    token = new TextDecoder().decode(plano);
+    await recordarClave(clave);
+  } catch {
+    const intentos = (reg.intentos || 0) + 1;
+    if (intentos >= PIN_INTENTOS) {
+      desactivarPin();
+      return showLogin(`${PIN_INTENTOS} intentos fallidos: entrá con tu contraseña y elegí un PIN nuevo.`);
+    }
+    localStorage.setItem(PIN_KEY, JSON.stringify({ ...reg, intentos }));
+    const quedan = PIN_INTENTOS - intentos;
+    return errorPin(`PIN incorrecto. Te ${quedan === 1 ? "queda 1 intento" : `quedan ${quedan} intentos`}.`);
+  }
+  const { data, error } = await supabase.auth.refreshSession({ refresh_token: token });
+  if (error || !data.session) {
+    // 4xx: Supabase ya no reconoce la sesión (por ejemplo, cerraste sesión en otro lado).
+    if (error?.status && error.status < 500) {
+      desactivarPin();
+      return showLogin("La entrada rápida venció. Entrá con tu contraseña y activala de nuevo.");
+    }
+    return errorPin("No pude conectar con Supabase. Revisá internet y probá de nuevo.");
+  }
+  state.user = data.session.user;
+  showApp();
+}
 
 const CATEGORIAS = ["service", "sistemas", "clases", "asesoria", "otros"];
 const money = (n) =>
@@ -20,15 +133,19 @@ const dateFmt = (d) => (d ? new Date(d + "T00:00:00").toLocaleDateString("es-AR"
 
 let state = {
   projects: [], transactions: [], user: null, chart: null,
-  priceItems: [], quotes: [], preciosOk: true,
+  priceItems: [], quotes: [], preciosOk: true, docOk: true,
   ipc: [], dolarMep: null, mercadoCargado: false,
 };
 
 // ---------- auth ----------
 const loginView = document.getElementById("login-view");
 const appView = document.getElementById("app-view");
+const loginForm = document.getElementById("login-form");
+const pinForm = document.getElementById("pin-form");
+const pinInput = document.getElementById("pin");
 
 async function checkSession() {
+  await clavePinLista;
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
     state.user = session.user;
@@ -38,20 +155,47 @@ async function checkSession() {
   }
 }
 
-function showLogin() {
+function showLogin(mensaje) {
   loginView.style.display = "flex";
   appView.style.display = "none";
+  const hayPin = Boolean(leerPin()?.data);
+  pinForm.hidden = !hayPin;
+  loginForm.hidden = hayPin;
+  document.getElementById("pin-error").hidden = true;
+  const errEl = document.getElementById("login-error");
+  errEl.hidden = !mensaje;
+  if (mensaje) errEl.textContent = mensaje;
+  if (hayPin) {
+    pinInput.value = "";
+    pinInput.focus();
+  }
+}
+
+function errorPin(msg) {
+  const el = document.getElementById("pin-error");
+  el.textContent = msg;
+  el.hidden = false;
+  pinInput.value = "";
+  pinInput.focus();
 }
 
 function showApp() {
   loginView.style.display = "none";
   appView.style.display = "block";
   document.getElementById("user-email").textContent = state.user?.email || "";
+  renderBotonesSesion();
   loadAll();
   if (!state.mercadoCargado) loadMercado();
 }
 
-document.getElementById("login-form").addEventListener("submit", async (e) => {
+function renderBotonesSesion() {
+  const pin = conPin();
+  document.getElementById("logout-btn").textContent = pin ? "Bloquear" : "Salir";
+  document.getElementById("logout-btn").title = pin ? "Cierra el panel en esta pestaña; volvés a entrar con tu PIN" : "";
+  document.getElementById("pin-toggle-btn").textContent = pin ? "Quitar PIN" : "Activar PIN";
+}
+
+loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -70,13 +214,83 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   }
   state.user = data.user;
   showApp();
+  if (document.getElementById("login-pin").checked) openPinModal();
+});
+
+pinForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const pin = pinInput.value.trim();
+  if (!/^\d{4,6}$/.test(pin)) return errorPin("El PIN tiene de 4 a 6 números.");
+  const btn = document.getElementById("pin-btn");
+  btn.disabled = true;
+  btn.textContent = "Entrando...";
+  await entrarConPin(pin);
+  btn.disabled = false;
+  btn.textContent = "Entrar";
+});
+// Al completar los números del PIN entra solo, sin tener que tocar el botón.
+pinInput.addEventListener("input", () => {
+  pinInput.value = pinInput.value.replace(/\D/g, "");
+  if (pinInput.value.length === leerPin()?.largo) pinForm.requestSubmit();
+});
+document.getElementById("pin-olvido").addEventListener("click", () => {
+  desactivarPin();
+  showLogin();
+  document.getElementById("email").focus();
 });
 
 document.getElementById("logout-btn").addEventListener("click", async () => {
+  if (conPin()) {
+    // Bloquear: se borra la sesión de esta pestaña; la guardada con el PIN sigue sirviendo.
+    sessionStorage.removeItem(SESION_KEY);
+    sessionStorage.removeItem(PIN_CLAVE_KEY);
+    location.reload();
+    return;
+  }
   await supabase.auth.signOut();
   state.user = null;
   showLogin();
 });
+
+document.getElementById("pin-toggle-btn").addEventListener("click", () => {
+  if (!conPin()) return openPinModal();
+  if (!confirm("¿Quitar el PIN? El panel va a quedar abierto en este navegador hasta que toques Salir.")) return;
+  desactivarPin();
+  renderBotonesSesion();
+  toast("PIN quitado.");
+});
+
+function openPinModal() {
+  const modal = buildModal(`
+    <h3>Entrada rápida con PIN</h3>
+    <p class="dim" style="font-size:13.5px;margin:-6px 0 16px">Elegí un PIN de 4 a 6 números. La próxima vez que abras el panel
+    en este dispositivo, entrás sólo con el PIN, sin email ni contraseña.</p>
+    <form id="pin-nuevo-form">
+      <div class="field-row">
+        <div class="field"><label>PIN</label><input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" required autocomplete="off"></div>
+        <div class="field"><label>Repetilo</label><input name="pin2" type="password" inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" required autocomplete="off"></div>
+      </div>
+      <p class="error-msg" id="pin-nuevo-error" hidden></p>
+      <div class="actions">
+        <button type="button" class="btn btn--ghost" data-close>Ahora no</button>
+        <button type="submit" class="btn btn--primary">Activar</button>
+      </div>
+    </form>
+  `);
+  const form = modal.querySelector("#pin-nuevo-form");
+  form.pin.focus();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = modal.querySelector("#pin-nuevo-error");
+    if (!/^\d{4,6}$/.test(form.pin.value)) { err.textContent = "Tienen que ser de 4 a 6 números."; err.hidden = false; return; }
+    if (form.pin.value !== form.pin2.value) { err.textContent = "Los dos PIN no coinciden."; err.hidden = false; return; }
+    const ok = await activarPin(form.pin.value);
+    if (!ok) { err.textContent = "No hay una sesión abierta: entrá de nuevo y probá otra vez."; err.hidden = false; return; }
+    closeModal();
+    renderBotonesSesion();
+    toast("Listo: la próxima vez entrás con tu PIN.");
+  });
+}
 
 // ---------- tabs ----------
 function showView(name) {
@@ -115,6 +329,8 @@ async function loadAll() {
   state.transactions = transactions || [];
   state.priceItems = priceItems || [];
   state.quotes = quotes || [];
+  // Si todavía no se corrió supabase/presupuestos-pdf.sql, los presupuestos vienen sin la columna "doc".
+  if (state.quotes.length) state.docOk = "doc" in state.quotes[0];
   renderAll();
 }
 
@@ -343,7 +559,7 @@ function openMovModal(mov) {
         <div class="field"><label>Monto (ARS)</label><input type="number" step="0.01" min="0.01" name="amount" required value="${mov?.amount || ""}"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Fecha</label><input type="date" name="date" required value="${mov?.date || new Date().toISOString().slice(0, 10)}"></div>
+        <div class="field"><label>Fecha</label><input type="date" name="date" required value="${mov?.date || hoyISO()}"></div>
         <div class="field"><label>Categoría</label>
           <select name="category">
             <option value="">—</option>
@@ -394,7 +610,11 @@ const CATEGORIAS_PRECIO = {
 const UNIDADES = ["trabajo", "hora", "mes", "clase", "paquete", "proyecto"];
 const ESTADOS_PRESU = ["borrador", "enviado", "aceptado", "rechazado"];
 const REFS = window.REFERENCIAS_MERCADO || { revisado: null, items: [] };
-const hoyISO = () => new Date().toISOString().slice(0, 10);
+// Fecha local: toISOString() da la de UTC, que después de las 21 en Argentina ya es mañana.
+const hoyISO = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtPct = (n) => `${(n * 100).toFixed(1).replace(".", ",")}%`;
@@ -591,12 +811,13 @@ function renderPresupuestos() {
       const phCls = ph && tarifa ? (ph >= tarifa ? "ok" : "bajo") : "";
       return `<tr>
       <td class="mono">${dateFmt(q.date)}</td>
-      <td>${esc(q.title)}<div class="dim" style="font-size:12px">${CATEGORIAS_PRECIO[q.category] || ""}${q.publishable ? " · caso para la landing" : ""}</div></td>
+      <td>${esc(q.title)}<div class="dim" style="font-size:12px">${q.doc?.numero ? `Nº ${esc(q.doc.numero)} · ` : ""}${CATEGORIAS_PRECIO[q.category] || ""}${q.publishable ? " · caso para la landing" : ""}</div></td>
       <td class="dim">${esc(q.client_name) || "—"}</td>
       <td class="mono">${money(q.final_price)}${Number(q.list_price) > Number(q.final_price) ? `<div class="dim" style="font-size:11.5px">lista ${money(q.list_price)}</div>` : ""}</td>
       <td>${ph ? `<span class="pill ${phCls}">${money(ph)}/h</span>` : '<span class="dim">—</span>'}</td>
       <td><span class="badge ${q.status}">${q.status}</span></td>
       <td><div class="row-actions">
+        <button class="icon-btn" data-pdf-presu="${q.id}">PDF</button>
         <button class="icon-btn" data-edit-presu="${q.id}">Ver / editar</button>
         <button class="icon-btn danger" data-del-presu="${q.id}">Borrar</button>
       </div></td>
@@ -604,6 +825,7 @@ function renderPresupuestos() {
     })
     .join("");
   document.getElementById("empty-presupuestos").hidden = list.length > 0 || !state.preciosOk;
+  document.getElementById("presu-doc-setup").hidden = state.docOk || !state.preciosOk;
 }
 
 function renderListaPrecios() {
@@ -667,8 +889,12 @@ document.getElementById("btn-nuevo-presu").addEventListener("click", () => openP
 document.getElementById("btn-nuevo-precio").addEventListener("click", () => openPrecioModal());
 
 document.getElementById("tabla-presupuestos").addEventListener("click", (e) => {
-  const { editPresu, delPresu } = e.target.dataset;
+  const { editPresu, delPresu, pdfPresu } = e.target.dataset;
   if (editPresu) openPresuModal(state.quotes.find((q) => q.id === editPresu));
+  if (pdfPresu) {
+    const q = state.quotes.find((x) => x.id === pdfPresu);
+    abrirDocumento(q, docDe(q));
+  }
   if (delPresu) borrar("quotes", delPresu, "¿Borrar este presupuesto?", "Presupuesto borrado.");
 });
 
@@ -744,55 +970,190 @@ function openPrecioModal(item) {
   });
 }
 
+// ---------- presupuesto para el cliente ----------
+const sumarDias = (iso, n) => {
+  const d = new Date(iso + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+// Nº correlativo por año: 2026-001, 2026-002…
+function siguienteNumero(fecha) {
+  const anio = (fecha || hoyISO()).slice(0, 4);
+  const usados = state.quotes
+    .map((q) => q.doc?.numero)
+    .filter((n) => n?.startsWith(anio + "-"))
+    .map((n) => parseInt(n.slice(5), 10) || 0);
+  const delAnio = state.quotes.filter((q) => q.date?.startsWith(anio)).length;
+  return `${anio}-${String(Math.max(delAnio, ...usados) + 1).padStart(3, "0")}`;
+}
+
+// El contenido del documento de un presupuesto. Los que se cargaron antes de que existiera el PDF
+// arrancan con la plantilla de su categoría y un renglón con el precio que tenían.
+function docDe(q) {
+  if (q?.doc) return { items: [], ...q.doc };
+  const cat = q?.category || "service";
+  const t = plantilla(cat);
+  const fecha = q?.date || hoyISO();
+  const doc = {
+    numero: siguienteNumero(fecha),
+    valida_hasta: sumarDias(fecha, t.validez_dias),
+    situacion: "",
+    propuesta_intro: t.propuesta_intro,
+    no_incluye: t.no_incluye,
+    plazos: t.plazos,
+    condiciones: t.condiciones,
+    cierre: t.cierre,
+    abono_monto: null,
+    abono_incluye: t.abono_incluye,
+    descuento_tipo: "pct",
+    descuento: 0,
+    descuento_motivo: "",
+    items: [],
+  };
+  if (q) {
+    const lista = Number(q.list_price) || Number(q.final_price) || 0;
+    doc.items = [{ concepto: q.title, detalle: "", cant: 1, precio: lista }];
+    if (lista > Number(q.final_price)) Object.assign(doc, { descuento_tipo: "monto", descuento: lista - Number(q.final_price) });
+  }
+  return doc;
+}
+
+function abrirDocumento(q, doc, ventana = window.open("", "_blank")) {
+  if (!ventana) return toast("El navegador bloqueó la pestaña nueva: permití las ventanas emergentes para este sitio.");
+  ventana.document.open();
+  ventana.document.write(documentoHTML(q, doc));
+  ventana.document.close();
+}
+
+const faltaColumnaDoc = (err) => err && (err.code === "PGRST204" || (/'doc'/.test(err.message) && /column/i.test(err.message)));
+
 function openPresuModal(q) {
   const isEdit = !!q;
+  const doc = docDe(q);
+  const includes = isEdit ? q.includes || "" : plantilla(q?.category || "service").includes;
+  const presu = (k) => esc(doc[k] ?? "");
+  const opcionesLista = Object.entries(CATEGORIAS_PRECIO)
+    .map(([cat, nombre]) => {
+      const items = state.priceItems.filter((p) => p.category === cat);
+      return items.length
+        ? `<optgroup label="${nombre}">${items.map((p) => `<option value="${p.id}">${esc(p.name)} · ${money(p.price)} por ${esc(p.unit)}</option>`).join("")}</optgroup>`
+        : "";
+    })
+    .join("");
+
   const modal = buildModal(`
     <h3>${isEdit ? "Presupuesto" : "Nuevo presupuesto"}</h3>
-    <form id="presu-form">
-      <div class="field"><label>Trabajo</label><input name="title" required value="${esc(q?.title)}" placeholder="Ej.: Notebook Lenovo: SSD + RAM + Windows"></div>
+    <form id="presu-form" novalidate>
+      <p class="form-sec">// Datos</p>
+      <div class="field"><label>Trabajo (es el título del PDF)</label><input name="title" required value="${esc(q?.title)}" placeholder="Ej.: Notebook Lenovo: SSD + RAM + Windows"></div>
       <div class="field-row">
         <div class="field"><label>Cliente</label><input name="client_name" value="${esc(q?.client_name)}"></div>
-        <div class="field"><label>Proyecto (opcional)</label>
-          <select name="project_id"><option value="">—</option>
-            ${state.projects.map((p) => `<option value="${p.id}" ${q?.project_id === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}
-          </select></div>
-      </div>
-      <div class="field-row">
         <div class="field"><label>Categoría</label>
           <select name="category">${opciones(Object.keys(CATEGORIAS_PRECIO), q?.category || "service", (k) => CATEGORIAS_PRECIO[k])}</select></div>
-        <div class="field-row" style="gap:12px">
-          <div class="field"><label>Fecha</label><input type="date" name="date" required value="${q?.date || hoyISO()}"></div>
-          <div class="field"><label>Estado</label><select name="status">${opciones(ESTADOS_PRESU, q?.status || "borrador")}</select></div>
-        </div>
       </div>
+      <div class="field-row field-row--4">
+        <div class="field"><label>Nº</label><input name="d_numero" value="${presu("numero")}"></div>
+        <div class="field"><label>Fecha</label><input type="date" name="date" required value="${q?.date || hoyISO()}"></div>
+        <div class="field"><label>Válido hasta</label><input type="date" name="d_valida_hasta" value="${presu("valida_hasta")}"></div>
+        <div class="field"><label>Estado</label><select name="status">${opciones(ESTADOS_PRESU, q?.status || "borrador")}</select></div>
+      </div>
+      <div class="field"><label>Proyecto (opcional)</label>
+        <select name="project_id"><option value="">—</option>
+          ${state.projects.map((p) => `<option value="${p.id}" ${q?.project_id === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}
+        </select></div>
+
+      <p class="form-sec">// Lo que lee el cliente</p>
+      <p class="form-ayuda">Viene cargado según la categoría: cambiá lo que haga falta. En las listas va una cosa por renglón;
+      si escribís <b>Título: detalle</b>, el título sale en negrita. Lo que está entre [corchetes] es para completar.
+      Las secciones que dejes vacías no salen en el PDF.</p>
+      <div class="field"><label>Qué me contaste</label><textarea name="d_situacion" rows="3" placeholder="El problema contado como te lo contó el cliente.">${presu("situacion")}</textarea></div>
+      <div class="field"><label>Qué te propongo · introducción</label><input name="d_propuesta_intro" value="${presu("propuesta_intro")}"></div>
+      <div class="field"><label>Qué te propongo · qué incluye</label><textarea name="includes" rows="5">${esc(includes)}</textarea></div>
+      <div class="field"><label>Qué no incluye</label><textarea name="d_no_incluye" rows="3">${presu("no_incluye")}</textarea></div>
+      <div class="field"><label>Plazos (Etapa: cuándo)</label><textarea name="d_plazos" rows="2">${presu("plazos")}</textarea></div>
+
+      <p class="form-sec">// Precio</p>
+      <div class="items" id="presu-items"></div>
+      <div class="items-add">
+        <select id="presu-agregar"><option value="">+ Agregar de tu lista de precios…</option>${opcionesLista}</select>
+        <button type="button" class="btn btn--ghost" id="presu-renglon">+ Renglón en blanco</button>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Descuento</label>
+          <div class="descuento">
+            <input type="number" step="any" min="0" name="d_descuento" value="${doc.descuento || ""}" placeholder="0">
+            <select name="d_descuento_tipo" aria-label="Tipo de descuento">${opciones(["pct", "monto"], doc.descuento_tipo || "pct", (v) => (v === "pct" ? "%" : "$"))}</select>
+          </div></div>
+        <div class="field"><label>Motivo del descuento</label><input name="d_descuento_motivo" value="${presu("descuento_motivo")}" placeholder="Ej.: por pago de contado"></div>
+      </div>
+      <div class="totales" id="presu-totales"></div>
       <div class="ref-hint" id="presu-refs"></div>
       <div class="field-row">
-        <div class="field"><label>Precio de lista</label><input type="number" step="1" min="0" name="list_price" value="${q?.list_price ?? ""}" placeholder="antes de descuentos"></div>
-        <div class="field"><label>Precio final</label><input type="number" step="1" min="0" name="final_price" required value="${q?.final_price ?? ""}"></div>
+        <div class="field"><label>Abono mensual (opcional)</label><input type="number" step="1" min="0" name="d_abono_monto" value="${doc.abono_monto ?? ""}" placeholder="vacío = no lleva abono"></div>
+        <div class="field"><label>Qué incluye el abono</label><textarea name="d_abono_incluye" rows="2">${presu("abono_incluye")}</textarea></div>
       </div>
-      <div class="field-row">
-        <div class="field"><label>Horas estimadas</label><input type="number" step="0.5" min="0" name="hours_estimated" value="${q?.hours_estimated ?? ""}"></div>
-        <div class="field"><label>Horas reales</label><input type="number" step="0.5" min="0" name="hours_real" value="${q?.hours_real ?? ""}"></div>
-      </div>
-      <p class="calc" id="presu-calc"></p>
-      <div class="field-row">
-        <div class="field"><label>Repuestos (ARS)</label><input type="number" step="1" min="0" name="parts_cost" value="${q?.parts_cost ?? ""}"></div>
-        <div class="field"><label>Los repuestos los paga</label>
-          <select name="parts_paid_by"><option value="">—</option>${opciones(["cliente", "yo"], q?.parts_paid_by)}</select></div>
-      </div>
-      <div class="field"><label>Qué incluí (una cosa por renglón)</label><textarea name="includes" rows="5">${esc(q?.includes)}</textarea></div>
-      <div class="field"><label>Por qué llegué a este precio</label><textarea name="reasoning" rows="4">${esc(q?.reasoning)}</textarea></div>
-      <label class="check"><input type="checkbox" name="publishable" ${q?.publishable ? "checked" : ""}> Se puede contar como caso en la landing (sin datos del cliente)</label>
-      <div class="actions">
+
+      <p class="form-sec">// Condiciones y cierre</p>
+      <div class="field"><label>Condiciones (Título: detalle)</label><textarea name="d_condiciones" rows="4">${presu("condiciones")}</textarea></div>
+      <div class="field"><label>Texto del cierre (debajo de “¿Arrancamos?”)</label><textarea name="d_cierre" rows="2">${presu("cierre")}</textarea></div>
+
+      <details class="interno">
+        <summary>// Sólo para vos: horas, repuestos y por qué este precio (no sale en el PDF)</summary>
+        <div class="field-row">
+          <div class="field"><label>Horas estimadas</label><input type="number" step="0.5" min="0" name="hours_estimated" value="${q?.hours_estimated ?? ""}"></div>
+          <div class="field"><label>Horas reales</label><input type="number" step="0.5" min="0" name="hours_real" value="${q?.hours_real ?? ""}"></div>
+        </div>
+        <p class="calc" id="presu-calc"></p>
+        <div class="field-row">
+          <div class="field"><label>Repuestos (ARS)</label><input type="number" step="1" min="0" name="parts_cost" value="${q?.parts_cost ?? ""}"></div>
+          <div class="field"><label>Los repuestos los paga</label>
+            <select name="parts_paid_by"><option value="">—</option>${opciones(["cliente", "yo"], q?.parts_paid_by)}</select></div>
+        </div>
+        <div class="field"><label>Por qué llegué a este precio</label><textarea name="reasoning" rows="3">${esc(q?.reasoning)}</textarea></div>
+        <label class="check"><input type="checkbox" name="publishable" ${q?.publishable ? "checked" : ""}> Se puede contar como caso en la landing (sin datos del cliente)</label>
+      </details>
+
+      <div class="actions actions--sticky">
         <button type="button" class="btn btn--ghost" data-close>Cancelar</button>
-        <button type="submit" class="btn btn--primary">Guardar</button>
+        <button type="submit" class="btn btn--ghost" data-pdf="0">Guardar</button>
+        <button type="submit" class="btn btn--primary" data-pdf="1">Guardar y generar PDF</button>
       </div>
     </form>
-  `, { wide: true });
+  `, { wide: "doc" });
 
   const form = modal.querySelector("#presu-form");
+  const itemsEl = modal.querySelector("#presu-items");
+  const totalesEl = modal.querySelector("#presu-totales");
   const refsEl = modal.querySelector("#presu-refs");
   const calcEl = modal.querySelector("#presu-calc");
+  let items = doc.items.map((it) => ({ ...it }));
+
+  const totales = () => calcularTotales({ items, descuento: num(form.d_descuento.value), descuento_tipo: form.d_descuento_tipo.value });
+
+  const renderItems = () => {
+    itemsEl.innerHTML = items.length
+      ? items
+          .map(
+            (it, i) => `<div class="item-row" data-i="${i}">
+          <input data-k="concepto" placeholder="Concepto" value="${esc(it.concepto)}">
+          <input data-k="detalle" placeholder="Detalle (opcional)" value="${esc(it.detalle)}">
+          <input data-k="cant" type="number" step="0.5" min="0" value="${it.cant ?? 1}" title="Cantidad" aria-label="Cantidad">
+          <input data-k="precio" type="number" step="1" min="0" value="${it.precio ?? ""}" placeholder="Precio" aria-label="Precio unitario">
+          <span class="importe mono">${money((Number(it.cant) || 0) * (Number(it.precio) || 0))}</span>
+          <button type="button" class="icon-btn danger" data-quitar="${i}" aria-label="Quitar renglón">✕</button>
+        </div>`
+          )
+          .join("")
+      : '<p class="dim items-vacio">Sumá lo que vas a cobrar: elegilo de tu lista de precios o agregá un renglón en blanco.</p>';
+  };
+
+  const actualizarTotales = () => {
+    const { subtotal, descuento, total } = totales();
+    totalesEl.innerHTML =
+      (descuento ? `<span>Valor de lista <b>${money(subtotal)}</b></span><span>Descuento <b>− ${money(descuento)}</b></span>` : "") +
+      `<span class="total">Total <b>${money(total)}</b></span>`;
+  };
 
   // Mientras cargás: qué cobra el mercado en esa categoría y cuánto te queda la hora.
   const actualizarAyuda = () => {
@@ -808,34 +1169,265 @@ function openPresuModal(q) {
       (tarifa && estim ? `Con ${estim} h a tu tarifa de ${money(tarifa)} serían <b>${money(estim * tarifa)}</b>.<br>` : "") +
       (lineas.length ? `Precios de mercado en ${CATEGORIAS_PRECIO[cat]}:<ul>${lineas.join("")}</ul>` : `Sin precios de mercado cargados para ${CATEGORIAS_PRECIO[cat]}.`);
 
-    const lista = num(form.list_price.value);
-    const final = num(form.final_price.value);
+    const { subtotal, total } = totales();
     const reales = num(form.hours_real.value);
     const partes = [];
-    if (lista && final !== null && final < lista) partes.push(`descuento ${fmtPct(1 - final / lista)}`);
-    if (final && reales) partes.push(`<b>${money(final / reales)}</b> por hora real`);
-    else if (final && estim) partes.push(`${money(final / estim)} por hora estimada`);
+    if (subtotal && total < subtotal) partes.push(`descuento ${fmtPct(1 - total / subtotal)}`);
+    if (total && reales) partes.push(`<b>${money(total / reales)}</b> por hora real`);
+    else if (total && estim) partes.push(`${money(total / estim)} por hora estimada`);
     calcEl.innerHTML = partes.join(" · ");
   };
-  form.addEventListener("input", actualizarAyuda);
+
+  itemsEl.addEventListener("input", (e) => {
+    const fila = e.target.closest(".item-row");
+    if (!fila) return;
+    const it = items[fila.dataset.i];
+    const k = e.target.dataset.k;
+    it[k] = k === "cant" || k === "precio" ? num(e.target.value) : e.target.value;
+    fila.querySelector(".importe").textContent = money((Number(it.cant) || 0) * (Number(it.precio) || 0));
+    actualizarTotales();
+  });
+  itemsEl.addEventListener("click", (e) => {
+    const i = e.target.dataset.quitar;
+    if (i === undefined) return;
+    items.splice(Number(i), 1);
+    renderItems();
+    actualizarTotales();
+    actualizarAyuda();
+  });
+  modal.querySelector("#presu-agregar").addEventListener("change", (e) => {
+    const p = state.priceItems.find((x) => x.id === e.target.value);
+    e.target.value = "";
+    if (!p) return;
+    items.push({ concepto: p.name, detalle: "", cant: 1, precio: Number(p.price) });
+    renderItems();
+    actualizarTotales();
+    actualizarAyuda();
+  });
+  modal.querySelector("#presu-renglon").addEventListener("click", () => {
+    items.push({ concepto: "", detalle: "", cant: 1, precio: null });
+    renderItems();
+    itemsEl.querySelector(".item-row:last-child input").focus();
+  });
+
+  // Al cambiar la categoría, los textos que seguían como venían de la plantilla se cambian por los de la nueva.
+  let base = plantilla(form.category.value);
+  const CAMPOS_PLANTILLA = { d_propuesta_intro: "propuesta_intro", includes: "includes", d_no_incluye: "no_incluye",
+    d_plazos: "plazos", d_condiciones: "condiciones", d_abono_incluye: "abono_incluye", d_cierre: "cierre" };
+  form.category.addEventListener("change", () => {
+    const nueva = plantilla(form.category.value);
+    for (const [campo, clave] of Object.entries(CAMPOS_PLANTILLA)) {
+      const v = form[campo].value.trim();
+      if (!v || v === base[clave].trim()) form[campo].value = nueva[clave];
+    }
+    const fecha = form.date.value || hoyISO();
+    if (!form.d_valida_hasta.value || form.d_valida_hasta.value === sumarDias(fecha, base.validez_dias)) {
+      form.d_valida_hasta.value = sumarDias(fecha, nueva.validez_dias);
+    }
+    base = nueva;
+  });
+  form.date.addEventListener("change", () => {
+    if (!isEdit && form.date.value) form.d_valida_hasta.value = sumarDias(form.date.value, base.validez_dias);
+  });
+
+  form.addEventListener("input", () => {
+    actualizarTotales();
+    actualizarAyuda();
+  });
+  renderItems();
+  actualizarTotales();
   actualizarAyuda();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const conPdf = e.submitter?.dataset.pdf === "1";
+    if (!form.elements.title.value.trim()) {
+      form.elements.title.focus();
+      return toast("Poné el nombre del trabajo.");
+    }
     const fd = new FormData(form);
-    const p = Object.fromEntries(fd.entries());
-    for (const k of ["list_price", "final_price", "parts_cost", "hours_estimated", "hours_real"]) p[k] = num(p[k]);
+    const p = {};
+    const d = {};
+    for (const [k, v] of fd.entries()) (k.startsWith("d_") ? d : p)[k.replace(/^d_/, "")] = typeof v === "string" ? v.trim() : v;
+    d.items = items
+      .filter((it) => String(it.concepto || "").trim() || Number(it.precio))
+      .map((it) => ({ concepto: String(it.concepto || "").trim(), detalle: String(it.detalle || "").trim(), cant: num(it.cant) ?? 1, precio: num(it.precio) ?? 0 }));
+    if (!d.items.length) return toast("Agregá al menos un renglón en Precio.");
+    d.descuento = num(d.descuento) || 0;
+    d.abono_monto = num(d.abono_monto);
+    const { subtotal, total } = calcularTotales(d);
+    p.list_price = subtotal;
+    p.final_price = total;
+    for (const k of ["parts_cost", "hours_estimated", "hours_real"]) p[k] = num(p[k]);
     for (const k of ["project_id", "parts_paid_by", "client_name", "includes", "reasoning"]) p[k] = p[k] || null;
     p.publishable = fd.get("publishable") === "on";
-    const { error } = isEdit
-      ? await supabase.from("quotes").update(p).eq("id", q.id)
-      : await supabase.from("quotes").insert(p);
-    if (error) return toast("Error: " + error.message);
+
+    let ventana = null;
+    if (conPdf) {
+      const faltan = pendientes([p.title, p.includes, ...Object.values(d).filter((v) => typeof v === "string"), ...d.items.map((it) => `${it.concepto} ${it.detalle}`)]);
+      if (faltan.length && !confirm(`Quedan partes para completar: ${[...new Set(faltan)].join(", ")}.\n\n¿Generar el PDF igual?`)) return;
+      // La pestaña se abre ya, antes de guardar: si se abre después, el navegador la toma como emergente y la bloquea.
+      ventana = window.open("", "_blank");
+    }
+
+    const guardar = (datos) =>
+      isEdit ? supabase.from("quotes").update(datos).eq("id", q.id) : supabase.from("quotes").insert(datos);
+    let { error } = await guardar({ ...p, doc: d });
+    let sinDoc = false;
+    if (faltaColumnaDoc(error)) {
+      ({ error } = await guardar(p));
+      sinDoc = !error;
+      state.docOk = false;
+    }
+    if (error) {
+      ventana?.close();
+      return toast("Error: " + error.message);
+    }
     closeModal();
-    toast(isEdit ? "Presupuesto actualizado." : "Presupuesto guardado.");
+    toast(sinDoc
+      ? "Guardado, pero sin el texto del PDF: falta correr supabase/presupuestos-pdf.sql."
+      : isEdit ? "Presupuesto actualizado." : "Presupuesto guardado.");
     loadAll();
+    if (ventana) abrirDocumento(p, d, ventana);
   });
 }
+
+// ---------- Excel de respaldo ----------
+// Todo lo del panel en un .xlsx: sirve para abrirlo en Excel o subirlo a Google Drive y tener
+// una copia por si algún día se pierde algo en Supabase. El resumen mensual y los totales por
+// proyecto van con fórmulas, así que si sumás movimientos a mano en la planilla se recalculan solos.
+function cargarScript(src, global) {
+  if (window[global]) return Promise.resolve(window[global]);
+  return new Promise((ok, mal) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = () => ok(window[global]);
+    s.onerror = () => mal(new Error("No se pudo cargar " + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function descargarExcel(btn) {
+  const textoBtn = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Armando el Excel…";
+  try {
+    const ExcelJS = await cargarScript("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js", "ExcelJS");
+    const wb = new ExcelJS.Workbook();
+    wb.creator = "BC Informática";
+    wb.created = new Date();
+    wb.calcProperties.fullCalcOnLoad = true;
+    const MONEDA = '"$" #,##0';
+    const FECHA = "dd/mm/yyyy";
+    // En UTC para que Excel no corra la fecha un día por el huso horario.
+    const fecha = (iso) => (iso ? new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10))) : null);
+    const proyecto = (id) => state.projects.find((p) => p.id === id)?.name || "";
+
+    const hoja = (nombre, columnas, filas) => {
+      const ws = wb.addWorksheet(nombre, { views: [{ state: "frozen", ySplit: 1 }] });
+      ws.columns = columnas.map(([header, key, width, numFmt]) => ({ header, key, width, style: numFmt ? { numFmt } : {} }));
+      filas.forEach((f) => ws.addRow(f));
+      const cabecera = ws.getRow(1);
+      cabecera.font = { bold: true, color: { argb: "FF121412" } };
+      cabecera.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC6FF00" } };
+      cabecera.numFmt = "General";
+      ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: columnas.length } };
+      return ws;
+    };
+
+    // Movimientos, del más viejo al más nuevo. Columnas: A fecha · B tipo · D proyecto · F monto (las usan las fórmulas).
+    const movs = [...state.transactions].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    const suma = (tipo, filtro) => movs.filter((t) => t.type === tipo && filtro(t)).reduce((s, t) => s + Number(t.amount), 0);
+
+    // Resumen mensual: desde el primer movimiento hasta este mes.
+    const meses = [];
+    const hoy = new Date();
+    const primero = movs[0]?.date ? new Date(+movs[0].date.slice(0, 4), +movs[0].date.slice(5, 7) - 1, 1) : new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    for (let d = primero; d <= hoy; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) {
+      meses.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    }
+    let acumulado = 0;
+    hoja("Resumen mensual", [
+      ["Mes", "mes", 14, "mmm yyyy"], ["Ingresos", "ingresos", 16, MONEDA], ["Egresos", "egresos", 16, MONEDA],
+      ["Balance", "balance", 16, MONEDA], ["Acumulado", "acumulado", 16, MONEDA],
+    ], meses.map((m, i) => {
+      const r = i + 2;
+      const ing = suma("ingreso", (t) => t.date?.startsWith(m));
+      const egr = suma("egreso", (t) => t.date?.startsWith(m));
+      acumulado += ing - egr;
+      const sumaMes = (tipo) => `SUMIFS(Movimientos!$F:$F,Movimientos!$B:$B,"${tipo}",Movimientos!$A:$A,">="&A${r},Movimientos!$A:$A,"<"&EDATE(A${r},1))`;
+      return {
+        mes: fecha(m + "-01"),
+        ingresos: { formula: sumaMes("ingreso"), result: ing },
+        egresos: { formula: sumaMes("egreso"), result: egr },
+        balance: { formula: `B${r}-C${r}`, result: ing - egr },
+        acumulado: { formula: `SUM(D$2:D${r})`, result: acumulado },
+      };
+    }));
+
+    hoja("Movimientos", [
+      ["Fecha", "date", 12, FECHA], ["Tipo", "type", 10], ["Categoría", "category", 12], ["Proyecto", "project", 26],
+      ["Descripción", "description", 44], ["Monto", "amount", 14, MONEDA],
+    ], movs.map((t) => ({ ...t, date: fecha(t.date), project: proyecto(t.project_id), amount: Number(t.amount) })));
+
+    hoja("Proyectos", [
+      ["Nombre", "name", 28], ["Cliente", "client_name", 22], ["Estado", "status", 11], ["Inicio", "start_date", 12, FECHA],
+      ["Fin", "end_date", 12, FECHA], ["Descripción", "description", 40], ["Ingresos", "ingresos", 14, MONEDA],
+      ["Egresos", "egresos", 14, MONEDA], ["Balance", "balance", 14, MONEDA],
+    ], state.projects.map((p, i) => {
+      const r = i + 2;
+      const ing = suma("ingreso", (t) => t.project_id === p.id);
+      const egr = suma("egreso", (t) => t.project_id === p.id);
+      const sumaProy = (tipo) => `SUMIFS(Movimientos!$F:$F,Movimientos!$D:$D,A${r},Movimientos!$B:$B,"${tipo}")`;
+      return {
+        ...p, start_date: fecha(p.start_date), end_date: fecha(p.end_date),
+        ingresos: { formula: sumaProy("ingreso"), result: ing },
+        egresos: { formula: sumaProy("egreso"), result: egr },
+        balance: { formula: `G${r}-H${r}`, result: ing - egr },
+      };
+    }));
+
+    // Columnas H (precio final) y J (horas reales) las usa la fórmula de "Por hora".
+    hoja("Presupuestos", [
+      ["Nº", "numero", 10], ["Fecha", "date", 12, FECHA], ["Trabajo", "title", 34], ["Cliente", "client_name", 22],
+      ["Categoría", "categoria", 11], ["Estado", "status", 11], ["Precio de lista", "list_price", 15, MONEDA],
+      ["Precio final", "final_price", 15, MONEDA], ["Horas estimadas", "hours_estimated", 10], ["Horas reales", "hours_real", 10],
+      ["Por hora", "por_hora", 13, MONEDA], ["Repuestos", "parts_cost", 13, MONEDA], ["Los paga", "parts_paid_by", 10],
+      ["Válido hasta", "valida_hasta", 12, FECHA], ["Qué incluye", "includes", 50], ["Por qué ese precio", "reasoning", 50],
+    ], state.quotes.map((q, i) => {
+      const r = i + 2;
+      const ph = porHora(q);
+      return {
+        ...q, numero: q.doc?.numero || "", date: fecha(q.date), categoria: CATEGORIAS_PRECIO[q.category] || q.category,
+        list_price: num(q.list_price), final_price: num(q.final_price), hours_estimated: num(q.hours_estimated),
+        hours_real: num(q.hours_real), parts_cost: num(q.parts_cost), valida_hasta: fecha(q.doc?.valida_hasta),
+        por_hora: { formula: `IF(N(J${r})>0,H${r}/J${r},"")`, result: ph ?? "" },
+      };
+    }));
+
+    hoja("Precios", [
+      ["Servicio", "name", 40], ["Categoría", "categoria", 12], ["Por", "unit", 10], ["Precio", "price", 14, MONEDA],
+      ["Último ajuste", "updated_on", 13, FECHA], ["Revisar cada (meses)", "adjust_every_months", 12], ["Notas", "notes", 44],
+    ], state.priceItems.map((p) => ({ ...p, categoria: CATEGORIAS_PRECIO[p.category] || p.category, price: Number(p.price), updated_on: fecha(p.updated_on) })));
+
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `BC-Informatica-seguimiento-${hoyISO()}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    toast("Excel descargado.");
+  } catch (err) {
+    toast("No pude armar el Excel: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = textoBtn;
+  }
+}
+document.querySelectorAll("[data-excel]").forEach((b) => b.addEventListener("click", () => descargarExcel(b)));
 
 // ---------- modal / toast helpers ----------
 function buildModal(innerHtml, { wide = false } = {}) {
@@ -843,7 +1435,7 @@ function buildModal(innerHtml, { wide = false } = {}) {
   const backdrop = document.createElement("div");
   backdrop.className = "modal-backdrop";
   backdrop.id = "active-modal";
-  backdrop.innerHTML = `<div class="modal${wide ? " modal--wide" : ""}">${innerHtml}</div>`;
+  backdrop.innerHTML = `<div class="modal${wide === "doc" ? " modal--doc" : wide ? " modal--wide" : ""}">${innerHtml}</div>`;
   backdrop.addEventListener("click", (e) => {
     if (e.target === backdrop || e.target.dataset.close !== undefined) closeModal();
   });
