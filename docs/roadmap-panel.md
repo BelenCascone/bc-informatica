@@ -182,9 +182,17 @@ tareas".
 3. **Plata del mes.** Ingresos contra egresos del mes y del anterior, por categoría y por proyecto.
    Lo que falta cobrar: presupuestos aceptados de un proyecto contra los ingresos cargados en ese
    proyecto.
-4. **Gastos que se repiten.** Los egresos que aparecen todos los meses (misma descripción o
-   categoría): cuánto suman por mes y qué parte de los ingresos se llevan. De acá sale la respuesta a
-   "¿me conviene suscribirme a algo más?" (a definir, ver sección 10).
+4. **Gastos fijos: ¿me conviene suscribirme a algo más?** Mira tus gastos, no a tus clientes
+   (decidido el 14/9/2026). Sale de los movimientos, sin campos nuevos:
+   - **Qué pagás todos los meses:** los egresos que se repiten con la misma descripción en al menos
+     2 de los últimos 3 meses (herramientas, hosting, dominio, suscripciones). Cuánto suma cada uno
+     y el total por mes.
+   - **Qué parte de tus ingresos se llevan,** y cuáles subieron respecto del mes anterior.
+   - **Margen libre:** el promedio de ingresos de los últimos 3 meses menos los gastos fijos. Es la
+     respuesta a "¿me entra una suscripción más?": si el margen es chico o negativo, el panel lo dice.
+   - **"¿La seguís usando?":** el panel no sabe cuánto usás cada herramienta, así que la lista de
+     gastos fijos lo pregunta para que lo revises vos. Guardar la respuesta necesitaría un campo
+     nuevo: si hace falta, se agrega al modelo en el sprint 03.
 5. **Ideas para mejorar.** Avisos automáticos, como los de precios: precios para ajustar (ya
    existen), proyectos dormidos, presupuestos enviados hace más de una semana sin respuesta,
    cobros pendientes, sprint atrasado, un mes con más egresos que ingresos.
@@ -320,10 +328,6 @@ Prompt de arranque de cada sprint:
 - **Precio de las clases:** la lista de precios y la landing no dicen lo mismo. Unificar antes de
   seguir mandando propuestas.
 - Si querés que el board traiga commits e issues de GitHub solo (sprint 11).
-- **"¿Me conviene suscribirme a algo más?" en Inicio:** falta definir qué pregunta contesta.
-  (a) Tus gastos fijos: qué herramientas pagás todos los meses, cuánto se llevan y si alguna no la
-  usás. (b) Tus clientes: a quién le conviene pasar a un abono en vez de pagar cada trabajo suelto.
-  (c) Las dos. Se decide antes del sprint 03.
 - Si querés aviso por WhatsApp o mail del resumen semanal, o te alcanza con abrirlo.
 - Si el `BASE-CONOCIMIENTO.md` de los otros cinco proyectos se escribe de una o a medida que
   vas tocando cada uno.
