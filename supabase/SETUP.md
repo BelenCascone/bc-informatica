@@ -6,13 +6,25 @@
 3. Esperá a que termine de crearse (1-2 minutos).
 
 ## 2. Crear las tablas
-1. En el menú lateral, andá a **SQL Editor** → **New query**.
-2. Pegá todo el contenido de [`schema.sql`](./schema.sql) y tocá **Run**.
-3. Esto crea las tablas `projects` y `transactions`, con seguridad para que cada dato solo lo puedas ver vos.
-4. Hacé lo mismo con [`precios.sql`](./precios.sql) (otra **New query**): crea las tablas de la pestaña
-   **Precios** (`price_items` y `quotes`), con la misma seguridad.
-5. Y por último con [`presupuestos-pdf.sql`](./presupuestos-pdf.sql): agrega a cada presupuesto el texto del PDF
-   que se le manda al cliente.
+Los `.sql` de esta carpeta se corren **en orden de número**, uno por vez. Todos se pueden correr dos
+veces sin romper nada.
+
+| Archivo | Qué crea |
+|---|---|
+| [`001-proyectos-y-movimientos.sql`](./001-proyectos-y-movimientos.sql) | Tablas `projects` y `transactions` |
+| [`002-precios.sql`](./002-precios.sql) | Tablas de la pestaña **Precios**: `price_items` y `quotes` |
+| [`003-presupuestos-pdf.sql`](./003-presupuestos-pdf.sql) | Columna `quotes.doc`: el texto del PDF que se le manda al cliente |
+| [`004-board.sql`](./004-board.sql) | Columnas nuevas de `projects` y las tablas del board: `sprints`, `tasks`, `task_events`, `qa_cases`, `qa_runs`, `bugs`, `journal`, con sus triggers |
+
+Todas las tablas tienen seguridad por fila: cada dato solo lo ve y lo toca quien lo cargó.
+
+**Cómo se corren.** Desde el sprint 02 se aplican con la herramienta de migraciones de Supabase
+(desde Claude Code, con el conector de Supabase), para que quede el historial en **Database →
+Migrations**. Si hace falta hacerlo a mano: **SQL Editor → New query**, pegar el archivo y **Run**;
+en ese caso no queda en el historial.
+
+Un `.sql` nuevo lleva el número siguiente y se escribe para poder correrse dos veces
+(`if not exists`, `drop policy if exists` antes de `create policy`, `create or replace function`).
 
 ## 3. Crear tu usuario
 1. Andá a **Authentication → Users → Add user → Create new user**.

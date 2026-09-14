@@ -1,5 +1,5 @@
--- BC Informática — Panel privado
--- Ejecutar una sola vez en Supabase: Dashboard > SQL Editor > New query > pegar todo > Run
+-- BC Informática — Panel privado · 001: proyectos y movimientos
+-- Es el primero de supabase/: se corren en orden de número. Se puede correr dos veces sin romper nada.
 
 create extension if not exists pgcrypto;
 
@@ -39,11 +39,13 @@ create index if not exists transactions_project_idx on transactions(project_id);
 alter table projects enable row level security;
 alter table transactions enable row level security;
 
+drop policy if exists "projects_owner_all" on projects;
 create policy "projects_owner_all" on projects
   for all
   using (owner_id = auth.uid())
   with check (owner_id = auth.uid());
 
+drop policy if exists "transactions_owner_all" on transactions;
 create policy "transactions_owner_all" on transactions
   for all
   using (owner_id = auth.uid())

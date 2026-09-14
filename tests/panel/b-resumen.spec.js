@@ -1,5 +1,8 @@
-// B. Pestañas y Resumen
-import { test, expect, abrirPanel, filas, fechaAR, hoyAR, insertar, irA, mesAtras, pesos, sumarDias } from "../ayuda.js";
+// B. Pestañas y Resumen (y el respaldo en JSON del sprint 02, que está en Resumen)
+import { readFileSync } from "node:fs";
+import {
+  test, expect, abrirPanel, esperarToast, filas, fechaAR, hoyAR, insertar, irA, mesAtras, pesos, sumarDias,
+} from "../ayuda.js";
 
 const LIMA = "rgb(198, 255, 0)";
 const ROJO = "rgb(255, 107, 94)";
@@ -112,4 +115,79 @@ test("RES-06 · Avisos en Resumen", async ({ page }) => {
   await expect(page.locator("#resumen-avisos h2")).toHaveText("// Avisos de precios");
   await expect(page.locator("#lista-avisos-resumen li")).toHaveCount(3);
   await expect(page.locator("#lista-avisos li")).toHaveCount(4);
+});
+
+// ---------- F. Respaldo en JSON (sprint 02) ----------
+const TABLAS_RESPALDO = [
+  "projects", "transactions", "price_items", "quotes",
+  "sprints", "tasks", "task_events", "qa_cases", "qa_runs", "bugs", "journal",
+];
+const DEL_BOARD = TABLAS_RESPALDO.slice(4);
+
+async function bajarRespaldo(page) {
+  const descarga = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Descargar respaldo (JSON)" }).click();
+  return descarga;
+}
+const leerRespaldo = async (descarga) => JSON.parse(readFileSync(await descarga.path(), "utf8"));
+
+test("JSN-01 · Descargar el respaldo", async ({ page }) => {
+  await abrirPanel(page);
+  const boton = page.locator("[data-respaldo]");
+  const descarga = bajarRespaldo(page);
+  await expect(boton).toHaveText("Armando el respaldo…");
+  await expect(boton).toBeDisabled();
+  expect((await descarga).suggestedFilename()).toBe(`BC-Informatica-respaldo-${hoyAR()}.json`);
+  await esperarToast(page, "Respaldo descargado.");
+  await expect(boton).toBeEnabled();
+  await expect(boton).toHaveText("Descargar respaldo (JSON)");
+});
+
+test("JSN-02 · Qué trae el respaldo", async ({ page }) => {
+  const p = await insertar("projects", { name: "Proyecto respaldo", status: "activo", start_date: hoyAR() });
+  const cargadas = {
+    projects: p,
+    transactions: await insertar("transactions", { type: "ingreso", amount: 1000, date: hoyAR(), project_id: p.id, description: "Cobro" }),
+    price_items: await insertar("price_items", { category: "service", name: "Precio", price: 1000, unit: "trabajo", updated_on: hoyAR() }),
+    quotes: await insertar("quotes", { title: "Presupuesto", category: "service", date: hoyAR(), status: "borrador", final_price: 1000 }),
+    sprints: await insertar("sprints", { project_id: p.id, numero: 1, nombre: "Sprint" }),
+  };
+  cargadas.tasks = await insertar("tasks", { project_id: p.id, sprint_id: cargadas.sprints.id, titulo: "Tarea" });
+  cargadas.qa_cases = await insertar("qa_cases", { project_id: p.id, titulo: "Caso" });
+  cargadas.qa_runs = await insertar("qa_runs", { qa_case_id: cargadas.qa_cases.id, task_id: cargadas.tasks.id, resultado: "pasa" });
+  cargadas.bugs = await insertar("bugs", { project_id: p.id, titulo: "Bug" });
+  cargadas.journal = await insertar("journal", { project_id: p.id, texto: "Entrada" });
+
+  await abrirPanel(page);
+  const respaldo = await leerRespaldo(await bajarRespaldo(page));
+  expect(Math.abs(new Date(respaldo.armado) - Date.now())).toBeLessThan(60_000);
+  expect(Object.keys(respaldo.tablas)).toEqual(TABLAS_RESPALDO);
+  expect(respaldo.faltan).toBeUndefined();
+  for (const [tabla, fila] of Object.entries(cargadas)) {
+    // La fila completa, con todas sus columnas. El último movimiento del proyecto se corrió con lo que
+    // se cargó después, así que ese no se compara.
+    const enRespaldo = respaldo.tablas[tabla].find((f) => f.id === fila.id);
+    const { ultimo_movimiento, ...resto } = fila;
+    expect(enRespaldo, tabla).toMatchObject(resto);
+    expect(Object.keys(enRespaldo).sort(), tabla).toEqual(Object.keys(fila).sort());
+  }
+  expect(respaldo.tablas.projects[0]).toHaveProperty("pulso", "andando");
+  expect(respaldo.tablas.task_events.map((e) => [e.task_id, e.estado_nuevo])).toEqual([[cargadas.tasks.id, "backlog"]]);
+});
+
+test("JSN-03 · Respaldo si falta correr un .sql", async ({ page }) => {
+  await insertar("projects", { name: "Proyecto sin board", status: "activo", start_date: hoyAR() });
+  await page.route((url) => DEL_BOARD.some((tabla) => url.pathname === `/rest/v1/${tabla}`), (route) =>
+    route.fulfill({
+      status: 404,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      json: { code: "PGRST205", message: "Could not find the table in the schema cache" },
+    })
+  );
+  await abrirPanel(page);
+  const respaldo = await leerRespaldo(await bajarRespaldo(page));
+  await esperarToast(page, `Respaldo descargado sin ${DEL_BOARD.join(", ")}: falta correr supabase/004-board.sql.`);
+  expect(Object.keys(respaldo.tablas)).toEqual(TABLAS_RESPALDO.slice(0, 4));
+  expect(respaldo.faltan).toEqual(DEL_BOARD);
+  expect(respaldo.tablas.projects).toHaveLength(1);
 });

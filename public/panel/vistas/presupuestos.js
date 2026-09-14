@@ -358,7 +358,7 @@ function openPresuModal(q) {
     }
     closeModal();
     toast(sinDoc
-      ? "Guardado, pero sin el texto del PDF: falta correr supabase/presupuestos-pdf.sql."
+      ? "Guardado, pero sin el texto del PDF: falta correr supabase/003-presupuestos-pdf.sql."
       : isEdit ? "Presupuesto actualizado." : "Presupuesto guardado.");
     loadAll();
     if (ventana) abrirDocumento(p, d, ventana);

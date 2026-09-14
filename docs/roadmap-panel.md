@@ -9,8 +9,9 @@ abiertos en un lugar, con mirada de desarrolladora **y** de QA manual. No es un 
 genérico: es el panel que le falta a ella.
 
 **Estado:** sprint 01 (ordenar la casa) terminado el 14/9/2026: `app.js` partido en módulos y 72
-tests de Playwright. Publicado el 14/9/2026 (PR #8); falta usarlo un día real. Próximo: sprint 02 (datos). Se sumó el sprint 03 (barra
-lateral e Inicio) y los siguientes corrieron un número.
+tests de Playwright. Publicado el 14/9/2026 (PR #8); falta usarlo un día real. **En curso:** sprint
+02 (datos), rama `sprint-02-datos`. Se sumó el sprint 03 (barra lateral e Inicio) y los siguientes
+corrieron un número.
 **Se construye con:** Claude Code, un sprint por sesión.
 
 -----
@@ -231,15 +232,16 @@ Tablas nuevas, todas con `owner_id uuid default auth.uid()` y la misma política
 ya usa el panel:
 
 ```
-sprints       id, project_id, numero, nombre, objetivo, desde, hasta, estado
+sprints       id, project_id, numero, nombre, objetivo, desde, hasta,
+              estado (planeado|activo|cerrado)
 
 tasks         id, project_id, sprint_id?, titulo, detalle,
               tipo (feature|bug|chore|qa),
-              estado (backlog|todo|doing|blocked|qa|done),
-              prioridad, estimado_horas, orden,
+              estado (backlog|todo|doing|blocked|qa|ready|done),
+              prioridad (alta|media|baja), estimado_horas, orden,
               creada, empezada, pasada_a_qa, cerrada
 
-task_events   id, task_id, estado_anterior, estado_nuevo, timestamp
+task_events   id, task_id, estado_anterior, estado_nuevo, fecha
               -- de acá salen TODAS las métricas
 
 qa_cases      id, project_id, titulo, pasos, resultado_esperado, area, activo
@@ -256,10 +258,32 @@ journal       id, fecha, project_id?, texto
 
 Reglas del modelo:
 
-1. Una tarea que pasa a `qa` **crea sola** su entrada en la cola de QA. No se carga a mano.
-2. `task_events` se escribe con un trigger de Postgres, no desde el navegador.
-3. `projects.ultimo_movimiento` se actualiza solo con cualquier evento del proyecto.
+1. Una tarea que pasa a `qa` **aparece sola** en la cola de QA. La cola no es una tabla: son las
+   tareas en estado `qa`. El ciclo de testing de cada sprint:
+   - La tarea pasa a `qa` cuando ya está en la dirección de prueba (staging), para probarla ahí
+     antes del merge a producción.
+   - Si pasa la prueba, va a `ready` ("Lista para prod"). Después del merge y la publicación, a
+     `done` ("Hecha" quiere decir publicada).
+   - Si tiene errores, se carga el bug con su tarea de origen y **la tarea vuelve sola** de `qa` a
+     `doing`. Mientras tenga bugs sin cerrar, el tablero la muestra "con errores": se calcula de
+     `bugs`, no es un campo. Un bug de una tarea que no está en `qa` no la mueve.
+2. `task_events` se escribe con un trigger de Postgres, no desde el navegador: se anota el alta de
+   cada tarea y cada cambio de estado. El navegador solo la puede leer (única tabla sin la política
+   "todo para el dueño": así ninguna métrica se toca a mano). En `task_events` la hora del cambio
+   se llama `fecha` (`timestamp` es una palabra de SQL).
+   - En `tasks`, `empezada` guarda la primera vez que pasó a `doing`; `pasada_a_qa` y `cerrada`,
+     la última vez que pasó a `qa` y a `done`. Si una tarea sale de `done`, `cerrada` se vacía.
+3. `projects.ultimo_movimiento` se actualiza solo con cualquier evento de trabajo del proyecto:
+   tareas, sprints, bugs, corridas de QA, bitácora y cambios de pulso, próximo paso o bloqueante.
 4. Ninguna tabla nueva sale a producción sin su política de RLS. Sin excepción.
+5. Un proyecto tiene como mucho **un sprint activo**. El número de sprint no se repite dentro de un
+   proyecto.
+6. Una tarea tiene prioridad `media` y estado `backlog` si no se dice otra cosa.
+7. Si se borra un proyecto se borran sus sprints, tareas, casos de QA y bugs; la bitácora y los
+   movimientos quedan sin proyecto. Si se borra un sprint, sus tareas quedan sin sprint.
+8. `journal.fecha` es un día; si no se dice otra cosa, el de hoy **en Argentina** (no en UTC, que
+   después de las 21 h ya es mañana). Las demás marcas (`task_events.fecha`, `qa_runs.fecha`,
+   `encontrado_en`, `cerrado_en`, las de `tasks`) son fecha y hora.
 
 ## 7. Sprints
 
@@ -269,15 +293,15 @@ Cada sprint termina **publicado y usado un día real** antes de arrancar el sigu
 |---|---|---|
 | `00` | Base de conocimiento | `BASE-CONOCIMIENTO.md` del repo completo, `CLAUDE.md` escrito, bóveda de Bitwarden armada, `.env.example`. **Sin esto no se escribe código.** |
 | `01` | Ordenar la casa | `app.js` partido en módulos ES, una vista por archivo, el panel andando exactamente igual que antes |
-| `02` | Datos | Migración SQL con las columnas nuevas y las 6 tablas nuevas, RLS y triggers, seed con los 6 proyectos reales |
+| `02` | Datos | Los `.sql` numerados y registrados en Supabase; migración con las columnas nuevas y las 7 tablas nuevas, RLS y triggers; respaldo en JSON desde Resumen |
 | `03` | Menú e Inicio | Barra lateral (Trabajo / Plata), una dirección por vista, e Inicio como pantalla de entrada con los bloques 1, 3, 4 y 5 (números generales, plata del mes, gastos que se repiten, ideas). Los proyectos abiertos se ven con pulso y próximo paso; la barra de avance llega con el Tablero |
-| `04` | Proyectos ampliado | Pulso, próximo paso y bloqueante en la ficha; la lista muestra el pulso de un vistazo. **Acá ya sirve para algo.** |
+| `04` | Proyectos ampliado | Pulso, próximo paso y bloqueante en la ficha; la lista muestra el pulso de un vistazo. Carga de los 6 proyectos reales con su pulso y próximo paso. **Acá ya sirve para algo.** |
 | `05` | Tablero | Kanban del sprint activo, arrastrar y soltar, alta y edición rápida de tareas. Suma en Inicio la barra de avance de cada proyecto (bloque 2) |
 | `06` | Qué agarro hoy | El bloque 6 de Inicio: sugerencias, trabado, a medias, para testear (antes era la pestaña "Hoy") |
 | `07` | QA | Cola de testeo, casos, correr un caso, cargar bug, reverificar |
 | `08` | Bitácora | Entrada rápida del día, historial por proyecto, buscador |
 | `09` | Métricas | Velocidad, tiempo de tarea, bugs por entrega, tiempo por proyecto |
-| `10` | Pulido | Atajos de teclado, buscador global, PWA para el celular, exportar respaldo en JSON, botón "Guardar en Drive" para el Excel |
+| `10` | Pulido | Atajos de teclado, buscador global, PWA para el celular, botón "Guardar en Drive" para el Excel |
 | `11` | Automático | Traer commits e issues de GitHub, aviso de proyecto dormido, resumen semanal |
 
 El 14/9/2026 se sumó el sprint 03 (Menú e Inicio) y los que venían después corrieron un número.
@@ -331,5 +355,5 @@ Prompt de arranque de cada sprint:
 - Si querés aviso por WhatsApp o mail del resumen semanal, o te alcanza con abrirlo.
 - Si el `BASE-CONOCIMIENTO.md` de los otros cinco proyectos se escribe de una o a medida que
   vas tocando cada uno.
-- **Seed del sprint 02:** los 6 proyectos reales se cargan con un `.sql` fuera del repo (tienen
-  datos de clientes); en el repo va, como mucho, un seed de ejemplo.
+- **Carga de los 6 proyectos reales (sprint 04, cuando la ficha los muestre):** con un `.sql`
+  fuera del repo (tienen datos de clientes); en el repo va, como mucho, un ejemplo.

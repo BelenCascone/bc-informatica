@@ -7,6 +7,7 @@ import "/panel/vistas/proyectos.js";
 import "/panel/vistas/movimientos.js";
 import { loadMercado } from "/panel/vistas/precios.js";
 import "/panel/excel.js";
+import "/panel/respaldo.js";
 
 // ---------- tabs ----------
 function showView(name) {

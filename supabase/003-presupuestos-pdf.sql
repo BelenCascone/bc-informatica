@@ -1,6 +1,5 @@
--- BC Informática — Panel privado: presupuestos con PDF para el cliente
--- Se corre UNA vez, después de precios.sql:
--- Supabase > SQL Editor > New query > pegar todo > Run
+-- BC Informática — Panel privado · 003: presupuestos con PDF para el cliente
+-- Va después de 002. Se puede correr dos veces sin romper nada.
 --
 -- Guarda en cada presupuesto el texto del documento que se le manda al cliente
 -- (Nº, qué me contaste, qué no incluye, plazos, renglones de precio, condiciones...),
