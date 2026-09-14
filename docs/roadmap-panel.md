@@ -8,7 +8,7 @@ Board de trabajo personal de BC Informática: una sola usuaria (Belén), todos l
 abiertos en un lugar, con mirada de desarrolladora **y** de QA manual. No es un ClickUp
 genérico: es el panel que le falta a ella.
 
-**Estado:** sprint 00 en curso (base de conocimiento).
+**Estado:** sprint 00 cerrado el 14/9/2026. Próximo: sprint 01 (ordenar la casa).
 **Se construye con:** Claude Code, un sprint por sesión.
 
 -----
