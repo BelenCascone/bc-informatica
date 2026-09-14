@@ -128,8 +128,35 @@ tests: la prueba de verdad es contra Supabase.
 | Corrida | Contra qué | Resultado |
 |---|---|---|
 | Antes de aplicar `004` · desarrollo (14/9/2026) | Esta rama, con producción todavía sin `004` | Suite del sprint 01: **71 pasan** · 0 fallan · 1 queda para el build. MIG-01, MIG-05 y JSN-03: pasan |
+| Después de aplicar `004` · producción (14/9/2026) | `main` después del PR #10, con `004` aplicado | Suite completa: **103 pasan** · 1 falla (JSN-02, intermitente, ver abajo) · 1 queda para el build. Build: **6 pasan** |
+| JSN-02 otra vez (14/9/2026) | Lo mismo | Solo: pasa (12,6 s). Tres veces seguidas con JSN-01 y JSN-03: **9 de 9 pasan**. `a-sesion` + `b-resumen` en el orden de la suite: **20 de 20 pasan** |
 
-- Lo que falta correr necesita `004-board.sql` aplicado en producción: DAT, TRG, SEG, BOR, JSN-01 y
-  JSN-02. Los "Al aplicar" y los manuales, también.
+- **JSN-02 falló una vez de 14.** Se agotaron los 30 s del test esperando la descarga, con el botón
+  todavía en "Armando el respaldo…". Solo, el test tarda unos 12 s y pasa siempre, así que la falla
+  apunta a un pedido que Supabase tardó en contestar. El respaldo no tiene tiempo límite: si un pedido
+  se cuelga, el botón queda en "Armando el respaldo…" y no avisa nada.
+- Después de la corrida la base quedó como antes: tus filas iguales y ninguna fila de prueba.
 - JSN-03 falló la primera vez por un error del test (el patrón interceptaba todas las tablas, no solo
   las del board). Corregido; el panel no tenía nada mal.
+
+### Al aplicar
+
+`004` se corrió primero desde el SQL Editor, el 14/9/2026 a las 17:26, y quedó fuera del historial.
+A las 19:06 se volvió a correr con la herramienta de migraciones (`004_board`). Antes y después se
+sacó una huella de la base: tablas, columnas, valores por defecto, restricciones, índices, políticas,
+triggers, permisos, funciones y filas.
+
+| ID | Resultado |
+|---|---|
+| MIG-02 | **Pasa.** La segunda corrida no dio error y no cambió nada: mismas tablas, columnas, políticas, triggers, índices, permisos y filas. La única diferencia fue el texto de las 6 funciones de `004`: desde el SQL Editor se habían guardado con los saltos de línea de Windows (`\r\n`) y ahora quedaron con `\n`. Se comprobó que es solo eso rearmando la huella de antes |
+| DAT-02 | **Pasa.** El proyecto que ya estaba quedó con pulso `andando`, tipo `cliente`, sin repo ni dirección de producción y con `ultimo_movimiento` |
+| DAT-08 | **Pasa.** La fecha por defecto de `journal` es `(now() at time zone 'America/Argentina/Buenos_Aires')::date`, no `current_date` |
+| SEG-01 | **Pasa.** Las 7 tablas con RLS. Advisors: ninguna alerta nueva; queda solo la de contraseñas filtradas, que ya estaba |
+| MIG-03 | El historial de Supabase trae `001_proyectos_y_movimientos`, `002_precios`, `003_presupuestos_pdf` y `004_board`, en ese orden (visto por la API). Falta que Belén lo vea en la pantalla |
+
+### Falta (manuales)
+
+- MIG-03: Supabase → Database → Migrations, ver los cuatro en orden.
+- JSN-04: abrir el respaldo en el Bloc de notas.
+- EST-08: el PR #10 ya se publicó, así que se corre en producción en vez de la dirección de prueba.
+- EST-09: descargar el respaldo desde el celular.

@@ -185,7 +185,8 @@ Se crean con estos archivos, en este orden:
    triggers
 
 Hasta el sprint 02 se llamaban `schema.sql`, `precios.sql` y `presupuestos-pdf.sql` y se corrían a
-mano, sin historial. El estado de cada uno en producción está en la sección 8.
+mano, sin historial. Desde el 14/9/2026 los cuatro están aplicados en producción y figuran en el
+historial de migraciones de Supabase.
 
 ### `projects` — trabajos y clientes
 
@@ -304,9 +305,10 @@ está en el roadmap, sección 6.
 
 ## 8. Pendientes conocidos
 
-- **Sprint 02 en curso:** `004-board.sql` todavía **no** está aplicado en producción, y los
-  `001` a `003` (aplicados a mano antes del sprint 02) todavía no figuran en el historial de
-  migraciones de Supabase.
+- **Cierre del sprint 02:** faltan los casos manuales (MIG-03, JSN-04, EST-08, EST-09; lista en
+  [`docs/casos/sprint-02.md`](docs/casos/sprint-02.md)).
+- **El respaldo JSON no tiene tiempo límite:** si Supabase no contesta un pedido, el botón queda en
+  "Armando el respaldo…" y no avisa nada. Se vio una vez en los tests (JSN-02).
 - **Errores confirmados en la corrida de base del sprint 01** (detalle en
   [`docs/casos/sprint-01.md`](docs/casos/sprint-01.md)). Hay que decidir cuándo se arreglan; los
   tests están marcados "así anda hoy" y avisan cuando cambie:
