@@ -277,6 +277,4 @@ no existen.
 - **Supabase avisa que la protección de contraseñas filtradas está apagada** (Auth → contraseñas).
   Es posible que no esté disponible en el plan gratis; mientras tanto, contraseña larga generada por
   Bitwarden.
-- **Casos manuales del sprint 01 sin correr:** PRS-16, PRS-17, XLS-03, EST-05 y EST-07 en el
-  celular (se corren en la dirección de prueba del PR).
 - **`is_featured`, `featured_result` y `publishable` no se usan todavía** en la landing.
