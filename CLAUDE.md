@@ -13,8 +13,12 @@
   compilación**: Vite lo copia tal cual al build, no lo procesa. Por eso:
   - nada de `import` de paquetes npm en el navegador; las librerías vienen de jsDelivr con
     **versión exacta** (`chart.js@4.4.4`, no `chart.js@4`);
-  - los archivos del panel se piden con **ruta absoluta** (`/panel/app.js`), nunca relativa;
-  - todo archivo del panel va dentro de `public/panel/`, si no Vercel no lo publica.
+  - los archivos del panel se piden y se importan con **ruta absoluta** (`/panel/app.js`,
+    `import … from "/panel/estado.js"`), nunca relativa;
+  - todo archivo del panel va dentro de `public/panel/`, si no Vercel no lo publica;
+  - una pestaña = un archivo en `public/panel/vistas/`, que se registra con `alCambiarDatos()` y se
+    importa en `app.js`. Lo compartido va en los módulos de `public/panel/` (ver
+    `BASE-CONOCIMIENTO.md`, sección 2).
 - **Datos:** Supabase con `supabase-js`. Sin backend propio.
 - **Publicación:** merge a `main` → Vercel publica. No hay otro entorno.
 
@@ -71,7 +75,8 @@ Tablero y QA se diseñan para escritorio; Hoy, Proyectos y Métricas tienen que 
 - **`BASE-CONOCIMIENTO.md` se actualiza en el mismo commit** en que cambia lo que describe (tablas,
   archivos, accesos, decisiones, pendientes).
 - Verificá los cambios del panel en el navegador con la configuración `bc-informatica` de
-  `.claude/launch.json` (Vite en el puerto 4173) antes de darlos por hechos.
+  `.claude/launch.json` (Vite en el puerto 4173; el panel está en `/panel/index.html`) y con
+  `npm test` antes de darlos por hechos.
 - Cargar una tarea en el board tiene que costar menos de 10 segundos. Si una vista no cambia lo que
   Belén hace hoy, no va.
 

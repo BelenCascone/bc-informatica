@@ -46,8 +46,9 @@ externo son las fuentes de Google.
 git clone https://github.com/BelenCascone/bc-informatica.git
 cd "BC INFORMATICA"
 npm install
-npm run dev     # servidor de desarrollo
+npm run dev     # servidor de desarrollo (panel en /panel/index.html)
 npm run build   # compila a dist/
+npm test        # tests del panel (necesita el usuario de prueba en .env.local)
 ```
 
 Para un cambio de texto o de estilo no hace falta nada de esto: se edita
@@ -60,7 +61,9 @@ index.html          → el sitio entero
 logo.jpeg           → favicon e imagen para redes
 public/assets/      → placas de Instagram y material de marca
 public/panel/       → panel privado (Supabase): proyectos, movimientos y precios
+public/panel/vistas → una pestaña del panel por archivo
 supabase/           → tablas del panel y guía de configuración (SETUP.md)
+tests/              → tests de Playwright del panel (casos en docs/casos/)
 vercel.json         → reenvía todas las rutas a index.html
 ```
 
