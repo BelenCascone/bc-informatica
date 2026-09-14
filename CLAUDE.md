@@ -65,7 +65,9 @@ Tablero y QA se diseñan para escritorio; Hoy, Proyectos y Métricas tienen que 
 
 - **Una sesión = un sprint = una rama:** `sprint-NN-nombre` (ej. `sprint-04-tablero`). Merge
   cuando está publicado.
-- Cada sprint arranca con los casos de prueba que escribe Belén; se convierten en tests de Playwright.
+- Cada sprint arranca con los casos de prueba que escribe Belén en `docs/casos/sprint-NN.md`; los
+  marcados "Auto" se convierten en tests de Playwright. Los tests corren con el **usuario de
+  prueba** (credenciales en `.env.local`), nunca con el usuario real de Belén.
 - **`BASE-CONOCIMIENTO.md` se actualiza en el mismo commit** en que cambia lo que describe (tablas,
   archivos, accesos, decisiones, pendientes).
 - Verificá los cambios del panel en el navegador con la configuración `bc-informatica` de

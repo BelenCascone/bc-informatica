@@ -220,5 +220,8 @@ no existen.
 - **Supabase avisa que la protección de contraseñas filtradas está apagada** (Auth → contraseñas).
   Es posible que no esté disponible en el plan gratis; mientras tanto, contraseña larga generada por
   Bitwarden.
-- **No hay tests.** Los de Playwright llegan con los sprints del board.
+- **No hay tests.** La lista de casos del sprint 01 está en
+  [`docs/casos/sprint-01.md`](docs/casos/sprint-01.md). Para correrlos falta crear el usuario de
+  prueba en Supabase (se explica ahí). La misma lista trae tres errores posibles que salieron al leer
+  el código (E-01 a E-03), para confirmar en la primera corrida.
 - **`is_featured`, `featured_result` y `publishable` no se usan todavía** en la landing.
