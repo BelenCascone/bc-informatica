@@ -21,7 +21,7 @@ Dos cosas en un mismo repo:
 |---|---|---|
 | Landing | Un solo `index.html` con HTML, CSS y JS adentro | Es chica: se edita y se ve sin compilar nada. Antes era React + Tailwind y sobraba. |
 | Panel | HTML + CSS + JavaScript con módulos ES, sin framework | Mismo criterio: nada que aprender ni actualizar. Lo mantiene una sola persona. |
-| Base y login | Supabase (Postgres 17 + Auth), cliente `supabase-js@2` desde jsDelivr | Login, base y seguridad por fila sin escribir un backend propio. Plan gratis. |
+| Base y login | Supabase (Postgres 17 + Auth), cliente `supabase-js@2.116.0` desde jsDelivr | Login, base y seguridad por fila sin escribir un backend propio. Plan gratis. |
 | Gráfico | Chart.js 4.4.4 desde jsDelivr | El gráfico de 6 meses del Resumen. |
 | Excel de respaldo | ExcelJS 4.4.0 desde jsDelivr, se carga recién al tocar "Descargar Excel" | Arma un `.xlsx` con fórmulas reales. No pesa en la carga del panel. |
 | PDF de presupuestos | El cuadro de impresión del navegador ("Guardar como PDF") | Texto real, liviano, con las mismas fuentes que la web. Sin librería de PDF. |
@@ -30,10 +30,33 @@ Dos cosas en un mismo repo:
 | Empaquetado | Vite 6 | Solo para compilar la landing y copiar `public/` al build. El panel **no** pasa por Vite: se copia tal cual. |
 | Hosting | Vercel | Push a `main` y publica solo. |
 | Tipografías | Space Grotesk, JetBrains Mono, Inter (Google Fonts) | Sistema de diseño Dev Blueprint. |
+| Tests | Playwright 1.63 (solo en desarrollo) + ExcelJS 4.4.0 para leer el Excel descargado | Los casos "Auto" de `docs/casos/`. No llegan al navegador ni al build. |
 
 Paleta Dev Blueprint: grafito `#121412`, lima `#C6FF00`, verde circuito `#1B4332`,
 crema `#FBF8E6`, gris `#8F9E8B`. Las variables CSS del panel están al principio de
 `public/panel/index.html`.
+
+### Cómo está armado el panel
+
+Módulos ES sin compilar, todos en `public/panel/` y pedidos con ruta absoluta (`/panel/...`):
+
+| Archivo | Qué hace |
+|---|---|
+| `index.html` | Estructura de las pestañas y todo el CSS (variables de Dev Blueprint arriba) |
+| `config.js` · `referencias.js` | URL y anon key de Supabase · precios de mercado (scripts comunes, sin módulo) |
+| `app.js` | Arranque: importa las vistas, conecta las pestañas y abre la sesión |
+| `conexion.js` | Cliente de Supabase y el cifrado de la entrada con PIN |
+| `sesion.js` | Login, PIN, Bloquear y Salir |
+| `estado.js` | `state`, `loadAll()` (trae las cuatro tablas) y `borrar()` |
+| `ui.js` · `formato.js` | Modal y aviso de abajo · formatos de plata, fechas y texto |
+| `calculos.js` | Inflación, comparación con el mercado, tarifa por hora, precio por hora |
+| `excel.js` | Excel de respaldo |
+| `vistas/resumen.js` · `proyectos.js` · `movimientos.js` · `precios.js` · `presupuestos.js` | Una pestaña por archivo (Presupuestos está dentro de la pestaña Precios) |
+| `presupuesto-doc.js` | Plantillas de texto y el documento con la marca que se guarda como PDF |
+
+Cada vista le avisa a `estado.js` qué dibujar cuando llegan los datos (`alCambiarDatos(render)`), y
+`app.js` las importa en el orden en que se dibujan. Una pestaña nueva es un archivo nuevo en
+`vistas/` más su `import` en `app.js`.
 
 ## 3. Dónde vive
 
@@ -63,6 +86,7 @@ cada una, nunca cuál es.
 | Cuenta de GitHub | Bitwarden → "GitHub" (con códigos de recuperación en notas) | solo yo |
 | Cuenta de Vercel | Bitwarden → "Vercel" | solo yo |
 | Gmail del negocio | Bitwarden → "Gmail BC" | solo yo |
+| Usuario de prueba del panel (para los tests) | Bitwarden → "BC panel QA" y `.env.local` | solo yo |
 | PIN del panel | No se guarda: es por dispositivo y se elige al activarlo | — |
 
 - **Verificación en dos pasos** activada en Bitwarden, GitHub, Gmail, Vercel y Supabase, con una app
@@ -80,8 +104,9 @@ Claves que usa el código:
   Son públicas por diseño; lo que protege los datos es la seguridad por fila (RLS) de la base.
 - **`service_role` key de Supabase**: no se usa en ningún lado. Si algún día hace falta (por
   ejemplo, para una Edge Function), va como secreto de Supabase, nunca en el repo ni en el navegador.
-- **Variables de entorno**: hoy ninguna. `.env.example` lo explica. `.env` y `.env.*` están en
-  `.gitignore`.
+- **Variables de entorno**: el sitio y el panel no usan ninguna. Los tests usan `PANEL_QA_EMAIL` y
+  `PANEL_QA_PASSWORD` (el usuario de prueba) en `.env.local`. `.env.example` lista los nombres.
+  `.env` y `.env.*` están en `.gitignore`.
 
 Si alguna vez se sube una clave privada al repo, no alcanza con borrarla: hay que rotarla en el
 proveedor. Al 14/9/2026 el historial de git está limpio.
@@ -90,12 +115,29 @@ proveedor. Al 14/9/2026 el historial de git está limpio.
 
 ```bash
 npm install        # una vez
-npm run dev        # landing en http://localhost:5173, panel en /panel/
+npm run dev        # landing en http://localhost:5173, panel en /panel/index.html
 npm run build      # compila a dist/
-npm run preview    # sirve dist/ para probar el build
+npm run preview    # sirve dist/ para probar el build (panel en /panel/)
 ```
 
 Para Claude Code hay una configuración en `.claude/launch.json` que levanta Vite en el puerto 4173.
+
+**Tests** (Playwright, con el usuario de prueba de `.env.local`):
+
+```bash
+npx playwright install chromium   # una vez
+npm test                          # todos los casos "Auto", contra Vite en el 4173 (~7 minutos)
+npm run test:build                # algunos casos contra el build de producción (EST-04)
+```
+
+- Los tests usan el Supabase de producción con el **usuario de prueba**: como todo filtra por
+  `owner_id`, ve una base vacía y no toca los datos reales.
+- Todo lo que cargan lleva el prefijo `QA · ` y solo borran filas con ese prefijo. Si la cuenta de
+  `.env.local` tiene alguna fila sin el prefijo (o sea, no es el usuario de prueba), no arrancan.
+- La inflación y el dólar se prueban con respuestas fijas; los tests no dependen del mes.
+- Supabase limita los logins por IP: la corrida entra 5 veces. No conviene correrla más de 5 o 6
+  veces seguidas en pocos minutos.
+- El reporte de la última corrida queda en `playwright-report/` (`npx playwright show-report`).
 
 **Publicar:** push (o merge de PR) a `main` → Vercel compila y publica solo. Cada rama con PR
 tiene su dirección de prueba de Vercel.
@@ -107,7 +149,11 @@ Supabase → SQL Editor → New query → pegar → Run. La guía completa desde
 **Qué se rompe seguido:**
 
 - **Rutas del panel.** El panel pide sus archivos con ruta absoluta (`/panel/app.js`,
-  `/panel/config.js`). Con rutas relativas se rompe según haya o no barra al final de `/panel`.
+  `/panel/config.js`), y los módulos se importan igual (`import … from "/panel/estado.js"`). Con
+  rutas relativas se rompe según haya o no barra al final de `/panel`.
+- **`/panel` en local.** Con `npm run dev`, `/panel` y `/panel/` muestran la landing; con
+  `npm run preview`, `/panel` sin barra también. Lo resuelve una regla de `vercel.json` que solo
+  corre en Vercel. En local se entra por `/panel/index.html`.
 - **Archivos del panel fuera de `public/`.** Vite solo copia `public/` al build: si el panel
   estuviera en la raíz, Vercel no lo publicaría.
 - **`vercel.json`.** La última regla manda todo a `index.html` (el router de la landing). Cualquier
@@ -207,21 +253,29 @@ no existen.
 | 14/9/2026 | Respaldo en Excel desde el Resumen | Copia propia de los datos, que se abre en Excel o Google Drive. |
 | 14/9/2026 | El board de proyectos se construye como pestañas nuevas de este panel | Una URL, un login, una base. Plata y precios ya estaban hechos (ver roadmap). |
 | 14/9/2026 | Contraseñas en Bitwarden; esta base dice dónde, nunca cuál | Repo público: un archivo con contraseñas es un incendio esperando. |
+| 14/9/2026 | `app.js` partido en módulos: una pestaña por archivo en `vistas/`, lo común aparte | Con 70 KB en un archivo no se podían sumar las seis pestañas del board. Sin cambiar nada de lo que hace. |
+| 14/9/2026 | Tests de Playwright contra el Supabase de producción, con un usuario de prueba | Sin base aparte que mantener. RLS aísla al usuario de prueba; el prefijo `QA · ` y la traba del arranque evitan borrar datos reales. |
+| 14/9/2026 | `supabase-js` fijado en 2.116.0 | Con `@2` podía cambiar solo cualquier día. Es la versión que `@2` bajaba ese día: no cambia nada. |
 
 ## 8. Pendientes conocidos
 
-- **`public/panel/app.js` pesa 70 KB (1.457 líneas) en un solo archivo.** El roadmap calculaba
-  42 KB; creció con los presupuestos. Se parte en módulos en el sprint 01.
 - **Los `.sql` están sueltos, sin número de orden y sin registro en Supabase.** Se ordenan en el
   sprint 02, antes de sumar tablas nuevas.
-- **`supabase-js` se carga como `@2`, sin versión exacta.** Puede cambiar solo cualquier día. Fijarla.
+- **Errores confirmados en la corrida de base del sprint 01** (detalle en
+  [`docs/casos/sprint-01.md`](docs/casos/sprint-01.md)). Hay que decidir cuándo se arreglan; los
+  tests están marcados "así anda hoy" y avisan cuando cambie:
+  - E-01: no se puede crear un proyecto sin fecha de inicio (`invalid input syntax for type date`).
+  - E-02: nombres, clientes y descripciones de proyectos y movimientos no se escapan: `Monitor 24"`
+    se corta al editar.
+  - E-03: tocar el fondo oscuro cierra cualquier modal sin preguntar y se pierde lo cargado.
+  - E-04: con un PIN nuevo de menos de 4 números sale el aviso del navegador, no el del panel.
+- **Contraseña del usuario de prueba:** cambiarla por una larga generada en Bitwarden y actualizar
+  `.env.local`.
 - **Precio de las clases:** la lista de precios (en Supabase) y la landing no dicen lo mismo.
   Unificar antes de mandar más propuestas.
 - **Supabase avisa que la protección de contraseñas filtradas está apagada** (Auth → contraseñas).
   Es posible que no esté disponible en el plan gratis; mientras tanto, contraseña larga generada por
   Bitwarden.
-- **No hay tests.** La lista de casos del sprint 01 está en
-  [`docs/casos/sprint-01.md`](docs/casos/sprint-01.md). Para correrlos falta crear el usuario de
-  prueba en Supabase (se explica ahí). La misma lista trae tres errores posibles que salieron al leer
-  el código (E-01 a E-03), para confirmar en la primera corrida.
+- **Casos manuales del sprint 01 sin correr:** PRS-16, PRS-17, XLS-03, EST-05 y EST-07 en el
+  celular (se corren en la dirección de prueba del PR).
 - **`is_featured`, `featured_result` y `publishable` no se usan todavía** en la landing.

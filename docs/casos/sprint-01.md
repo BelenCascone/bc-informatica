@@ -1,6 +1,7 @@
 # Sprint 01 — casos de prueba
 
-Última actualización: 14/9/2026 · Borrador para que Belén lo corrija antes de arrancar el sprint.
+Última actualización: 14/9/2026 · Lista aprobada por Belén el 14/9/2026. Resultados de las corridas
+al final.
 
 El sprint 01 parte `public/panel/app.js` en módulos **sin cambiar nada de lo que se ve ni de lo que
 hace**. Esta lista es todo lo que hoy funciona y tiene que seguir funcionando igual después.
@@ -21,13 +22,28 @@ Los tests **no** se corren con tu usuario real: crearían y borrarían filas en 
 **usuario de prueba** en el mismo proyecto de Supabase. Como todas las tablas filtran por
 `owner_id`, ese usuario ve una base vacía y nunca toca tus datos.
 
-- Lo creás vos en Supabase → Authentication → Users → Add user, con Auto Confirm. Sirve un alias de
-  tu Gmail: `bc.informatica.pna+qa@gmail.com` llega a la misma casilla y para Supabase es otra cuenta.
+- Se crea en Supabase → Authentication → Users → Add user, con Auto Confirm (creado el 14/9/2026).
 - Email y contraseña van en Bitwarden ("BC panel QA") y en `.env.local` como `PANEL_QA_EMAIL` y
-  `PANEL_QA_PASSWORD`. Los nombres se agregan a `.env.example`.
-- Cada test crea los datos que necesita y los borra al terminar.
+  `PANEL_QA_PASSWORD`. Los nombres están en `.env.example`.
+- Cada test crea los datos que necesita y los borra al terminar. Todo lo que carga lleva el prefijo
+  `QA · ` y la limpieza **solo borra filas con ese prefijo**. Además, si la cuenta tiene alguna fila
+  sin el prefijo, los tests no arrancan: así nunca pueden tocar datos reales por un `.env.local` mal
+  puesto.
 - La inflación y el dólar se prueban con respuestas fijas (el test intercepta las dos APIs), para que
   el resultado no cambie según el mes.
+
+### Cómo se corren
+
+```bash
+npx playwright install chromium   # una vez
+npm test                          # todos los "Auto" (tests/panel/a-sesion … h-estructura)
+npm run test:build                # LOG-01, MOV-01, PRS-07, EST-02 y EST-03 contra el build (EST-04)
+```
+
+Cada sección de esta lista es un archivo en `tests/panel/` (A → `a-sesion.spec.js`, B →
+`b-resumen.spec.js`, …) y cada test lleva el ID del caso en el nombre. Algunos tests juntan varios
+casos seguidos (por ejemplo LOG-01 · LOG-03 · LOG-04), para no entrar con contraseña de más: Supabase
+limita los logins.
 
 ---
 
@@ -40,7 +56,7 @@ Los tests **no** se corren con tu usuario real: crearían y borrarían filas en 
 | LOG-03 | La sesión queda abierta | Entrar sin PIN y recargar la página | Entra directo al panel, sin pedir nada | Auto |
 | LOG-04 | Salir | Sin PIN, tocar "Salir" y recargar | Vuelve al login y al recargar pide la contraseña | Auto |
 | PIN-01 | Activar PIN al entrar | Entrar con "entrar con un PIN" tildado | Se abre "Entrada rápida con PIN" | Auto |
-| PIN-02 | Validación del PIN nuevo | En el modal: PIN `12` · después `1234` y `1235` · después `1234` y `1234` | "Tienen que ser de 4 a 6 números." · "Los dos PIN no coinciden." · Se cierra, aviso "Listo: la próxima vez entrás con tu PIN." y los botones pasan a "Quitar PIN" y "Bloquear" | Auto |
+| PIN-02 | Validación del PIN nuevo | En el modal: PIN `12` · después `1234` y `1235` · después `1234` y `1234` | "Tienen que ser de 4 a 6 números." · "Los dos PIN no coinciden." · Se cierra, aviso "Listo: la próxima vez entrás con tu PIN." y los botones pasan a "Quitar PIN" y "Bloquear". **Hoy, con `12` sale el aviso del navegador en vez del del panel (E-04)** | Auto |
 | PIN-03 | "Ahora no" | En el modal de PIN, tocar "Ahora no" | Se cierra; siguen "Activar PIN" y "Salir" | Auto |
 | PIN-04 | Entrar con PIN | Con PIN activo, abrir el panel en una pestaña nueva y escribir el PIN | Solo pide el PIN. Al completar los números entra solo, sin tocar "Entrar" | Auto |
 | PIN-05 | PIN incorrecto y bloqueo | Escribir un PIN equivocado 5 veces | "PIN incorrecto. Te quedan 4 intentos." y así bajando ("Te queda 1 intento."). A la quinta vuelve al login con "5 intentos fallidos: entrá con tu contraseña y elegí un PIN nuevo." y el PIN queda borrado | Auto |
@@ -73,7 +89,7 @@ Los tests **no** se corren con tu usuario real: crearían y borrarían filas en 
 | PRO-04 | Filtro por estado | Elegir "Pausado" | Muestra solo los pausados. Si no hay: "Todavía no cargaste ningún proyecto." | Auto |
 | PRO-05 | Borrar | "Borrar" → aceptar | Pregunta "¿Borrar este proyecto? Los movimientos asociados quedan sin proyecto."; aviso "Proyecto borrado." Sus movimientos quedan con proyecto "—" | Auto |
 | PRO-06 | Arrepentirse de borrar | "Borrar" → cancelar | No se borra nada | Auto |
-| PRO-07 | Crear sin fecha de inicio | Crear un proyecto dejando "Inicio" vacío | **A confirmar en la corrida de base** (ver E-01) | Auto |
+| PRO-07 | Crear sin fecha de inicio | Crear un proyecto dejando "Inicio" vacío | **Hoy:** aviso `Error: invalid input syntax for type date: ""`, el modal queda abierto y no se guarda nada (E-01, confirmado) | Auto |
 
 ## D. Movimientos
 
@@ -143,8 +159,8 @@ Los tests **no** se corren con tu usuario real: crearían y borrarían filas en 
 | ID | Qué se prueba | Pasos | Resultado esperado | Cómo |
 |---|---|---|---|---|
 | EST-01 | Consola limpia | Entrar y recorrer las 4 pestañas, abrir y cerrar cada modal | Ningún error en la consola del navegador | Auto |
-| EST-02 | Todos los archivos cargan | Mirar la red al abrir `/panel` | Ningún archivo del panel da 404; todos se piden con ruta `/panel/...` | Auto |
-| EST-03 | `/panel` con y sin barra | Abrir `/panel` y `/panel/` | Los dos cargan el panel | Auto |
+| EST-02 | Todos los archivos cargan | Mirar la red al abrir `/panel` | Ningún archivo del panel da 404; todos se piden con ruta `/panel/...`; las librerías de jsDelivr van con versión exacta | Auto |
+| EST-03 | `/panel` con y sin barra | Abrir `/panel` y `/panel/` | Los dos cargan el panel. En local no se puede probar entero: `/panel` lo resuelve `vercel.json`, que solo corre en Vercel. El test revisa la regla de `vercel.json` y `/panel/` en el build; `/panel` sin barra se mira en EST-05 | Auto + Manual en EST-05 |
 | EST-04 | En el build de producción | `npm run build` y `npm run preview`, correr LOG-01, MOV-01 y PRS-07 | Igual que en desarrollo | Auto |
 | EST-05 | En Vercel | En la dirección de prueba del PR: entrar con contraseña, cargar un movimiento, generar un PDF | Anda igual que en producción | Manual |
 | EST-06 | La landing no cambió | Abrir `/` y recorrer sus pestañas | Igual que antes | Auto |
@@ -152,16 +168,39 @@ Los tests **no** se corren con tu usuario real: crearían y borrarían filas en 
 
 ---
 
-## Encontrados al leer el código (a confirmar en la corrida de base)
+## Errores encontrados
 
-No se arreglan en el sprint 01, que no cambia comportamiento. Si se confirman, pasan a pendientes
-en `BASE-CONOCIMIENTO.md` y se decide cuándo se arreglan.
+No se arreglan en el sprint 01, que no cambia comportamiento. Los confirmados pasan a pendientes en
+`BASE-CONOCIMIENTO.md` y se decide cuándo se arreglan. Cada uno tiene un test marcado "así anda hoy":
+pasa mientras el error siga igual y avisa el día que cambie (ahí se actualiza el test).
 
-| ID | Qué pasa | Por qué | Cómo se confirma |
+| ID | Qué pasa | Por qué | Estado |
 |---|---|---|---|
-| E-01 | Probablemente no se puede crear un proyecto sin fecha de inicio | El formulario manda la fecha vacía como texto `""` y la base no lo acepta como fecha | PRO-07: si sale "Error: invalid input syntax for type date", está confirmado |
-| E-02 | Un nombre con comillas se corta al editar | Nombres, clientes y descripciones de proyectos y movimientos se escriben sin escapar. `Monitor 24"` aparece como `Monitor 24` en el modal, y si guardás, se guarda cortado | Crear un proyecto `Monitor 24"`, tocar Editar y mirar el campo Nombre |
-| E-03 | Tocar afuera de un modal lo cierra sin preguntar | Pasa en todos los modales. En el de presupuesto se pierde todo lo cargado | Cargar medio presupuesto y tocar el fondo oscuro |
+| E-01 | No se puede crear un proyecto sin fecha de inicio | El formulario manda la fecha vacía como texto `""` y la base no lo acepta como fecha | **Confirmado** (PRO-07): `Error: invalid input syntax for type date: ""` |
+| E-02 | Un nombre con comillas se corta al editar | Nombres, clientes y descripciones de proyectos y movimientos se escriben sin escapar. `Monitor 24"` aparece como `Monitor 24` en el modal, y si guardás, se guarda cortado | **Confirmado** (test E-02) |
+| E-03 | Tocar afuera de un modal lo cierra sin preguntar | Pasa en todos los modales. En el de presupuesto se pierde todo lo cargado | **Confirmado** (test E-03) |
+| E-04 | Con un PIN nuevo de menos de 4 números no sale el aviso del panel | Los campos del PIN tienen `pattern="[0-9]{4,6}"`: el navegador frena el envío con su propio aviso ("Utilizá el formato solicitado") antes de que el panel diga "Tienen que ser de 4 a 6 números." | **Encontrado en la corrida de base** (PIN-02). Menor: igual no deja activar un PIN corto |
 
 Una diferencia menor, que puede ser a propósito: la categoría de los movimientos no tiene "abonos",
 y la de precios y presupuestos sí.
+
+---
+
+## Resultados
+
+| Corrida | Contra qué | Resultado |
+|---|---|---|
+| Base · desarrollo (14/9/2026) | `app.js` de `main`, sin tocar | 70 pasan · 1 falla · 1 queda para el build |
+| Base · build | Ídem, con `npm run build` + `preview` | 5 pasan · 1 falla |
+| Después · desarrollo (14/9/2026) | Panel partido en módulos | **71 pasan** · 0 fallan · 1 queda para el build |
+| Después · build | Ídem | **6 pasan** · 0 fallan |
+
+- La única falla de la base es EST-02 "Librerías con versión exacta": `supabase-js` se cargaba como
+  `@2`. Es el pendiente conocido que se resolvió en este sprint (quedó en `2.116.0`, la versión que
+  `@2` bajaba ese día). Todo lo demás da exactamente igual antes y después.
+- EST-03 solo corre contra el build: con `vite dev`, `/panel/` muestra la landing.
+- Hallazgo de la corrida de base que no es un error del panel: la base de conocimiento decía que con
+  `npm run dev` el panel estaba en `/panel/`; en realidad está en `/panel/index.html`. Corregido.
+
+**Falta, a mano, en la dirección de prueba del PR:** PRS-16, PRS-17, XLS-03, EST-05 (incluye
+`/panel` sin barra) y EST-07 en el celular.
