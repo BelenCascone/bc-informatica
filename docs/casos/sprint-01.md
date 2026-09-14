@@ -202,5 +202,5 @@ y la de precios y presupuestos sí.
 - Hallazgo de la corrida de base que no es un error del panel: la base de conocimiento decía que con
   `npm run dev` el panel estaba en `/panel/`; en realidad está en `/panel/index.html`. Corregido.
 
-**Falta, a mano, en la dirección de prueba del PR:** PRS-16, PRS-17, XLS-03, EST-05 (incluye
-`/panel` sin barra) y EST-07 en el celular.
+**Casos manuales** (PRS-16, PRS-17, XLS-03, EST-05 con `/panel` sin barra, y EST-07 en el
+celular): los corrió Belén en la dirección de prueba del PR el 14/9/2026. Pasaron todos.
