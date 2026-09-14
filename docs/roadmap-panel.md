@@ -9,7 +9,8 @@ abiertos en un lugar, con mirada de desarrolladora **y** de QA manual. No es un 
 genérico: es el panel que le falta a ella.
 
 **Estado:** sprint 01 (ordenar la casa) terminado el 14/9/2026: `app.js` partido en módulos y 72
-tests de Playwright. Falta publicarlo y usarlo un día real. Próximo: sprint 02 (datos).
+tests de Playwright. Falta publicarlo y usarlo un día real. Próximo: sprint 02 (datos). Se sumó el sprint 03 (barra
+lateral e Inicio) y los siguientes corrieron un número.
 **Se construye con:** Claude Code, un sprint por sesión.
 
 -----
@@ -142,20 +143,53 @@ Si un proyecto no está en esta tabla, no existe para el board.
 - **La tabla `projects` se amplía, no se duplica.** Las columnas nuevas (pulso, próximo paso,
   bloqueante, repo) se suman a la que ya existe y ya tiene tus datos.
 - **Escritorio para trabajar, celular para mirar.** Tablero y QA se diseñan para pantalla
-  grande; Hoy, Proyectos y Métricas tienen que leerse bien en el celular.
+  grande; Inicio, Proyectos y Métricas tienen que leerse bien en el celular.
 - **Las métricas se calculan, no se cargan.** Todo sale de una tabla de eventos.
+- **Navegación con barra lateral, no con pestañas arriba** (decidido el 14/9/2026). Con diez
+  vistas las pestañas no entran y el panel se parece a la landing. La barra va fija a la izquierda
+  en la compu y en el celular se abre con un botón de menú. Dos grupos:
+  - **Trabajo:** Inicio · Proyectos · Tablero · QA · Bitácora · Métricas
+  - **Plata:** Resumen · Movimientos · Precios
+- **Cada vista tiene su dirección** (`/panel#/inicio`, `/panel#/tablero`…), como la landing: se
+  puede guardar de favorito, compartir con vos misma en el celular y el botón "atrás" funciona.
+- **Inicio es la pantalla de entrada** y absorbe lo que iba a ser la pestaña "Hoy" (ver abajo).
 
 ## 5. Las pestañas nuevas
 
 | Pestaña | Qué contesta | ¿Existe? |
 |---|---|---|
-| **Hoy** | Qué agarro ahora: 3 tareas sugeridas, lo que quedó a medias, lo trabado, lo que hay para testear | Nueva — pasa a ser la pantalla de entrada |
+| **Inicio** | Cómo vengo con todo, de un vistazo: números generales, proyectos abiertos y cuánto les falta, plata del mes, gastos fijos, ideas para mejorar y qué agarro hoy | Nueva — pantalla de entrada |
 | **Proyectos** | Dónde estoy parada: pulso, próximo paso, bloqueante, sprint activo | Se amplía la que ya está |
 | **Tablero** | Kanban del sprint en curso, arrastrar y soltar | Nueva |
 | **QA** | Cola de listo-para-testear, casos, bugs, reverificación | Nueva |
 | **Bitácora** | Entradas cortas: dónde quedé, qué aprendí, qué me frenó | Nueva |
 | **Métricas** | Velocidad, cuánto tarda una tarea, bugs por entrega, en qué se te va el tiempo | Nueva |
-| **Resumen · Movimientos · Precios** | Plata y clientes | Ya terminadas |
+| **Resumen · Movimientos · Precios** | Plata y clientes | Ya terminadas; pasan al grupo Plata |
+
+### Inicio: la pantalla de entrada
+
+Un resumen hecho para vos, no para un cliente. Todo sale de datos que ya existen o que están en el
+modelo de la sección 6: no se carga ningún número a mano ni hace falta ninguna tabla nueva. Los
+bloques que dependen de tareas aparecen cuando existe el Tablero; antes dicen "todavía no hay
+tareas".
+
+1. **Números generales.** Proyectos abiertos, tareas del sprint hechas sobre el total, ingresos y
+   egresos del mes, balance.
+2. **Proyectos abiertos y cuánto les falta.** Una fila por proyecto con su pulso y su próximo paso,
+   y una barra de avance del sprint activo: tareas cerradas sobre el total, horas estimadas que
+   faltan (`tasks.estimado_horas`) y días que quedan (`sprints.hasta`). Si al ritmo de los últimos
+   días no llega, se marca.
+3. **Plata del mes.** Ingresos contra egresos del mes y del anterior, por categoría y por proyecto.
+   Lo que falta cobrar: presupuestos aceptados de un proyecto contra los ingresos cargados en ese
+   proyecto.
+4. **Gastos que se repiten.** Los egresos que aparecen todos los meses (misma descripción o
+   categoría): cuánto suman por mes y qué parte de los ingresos se llevan. De acá sale la respuesta a
+   "¿me conviene suscribirme a algo más?" (a definir, ver sección 10).
+5. **Ideas para mejorar.** Avisos automáticos, como los de precios: precios para ajustar (ya
+   existen), proyectos dormidos, presupuestos enviados hace más de una semana sin respuesta,
+   cobros pendientes, sprint atrasado, un mes con más egresos que ingresos.
+6. **Qué agarro hoy** (lo que era "Hoy"): 3 tareas sugeridas, lo que quedó a medias, lo trabado,
+   lo que hay para testear.
 
 ### La mirada humana (esto es lo que lo diferencia de ClickUp)
 
@@ -228,19 +262,22 @@ Cada sprint termina **publicado y usado un día real** antes de arrancar el sigu
 | `00` | Base de conocimiento | `BASE-CONOCIMIENTO.md` del repo completo, `CLAUDE.md` escrito, bóveda de Bitwarden armada, `.env.example`. **Sin esto no se escribe código.** |
 | `01` | Ordenar la casa | `app.js` partido en módulos ES, una vista por archivo, el panel andando exactamente igual que antes |
 | `02` | Datos | Migración SQL con las columnas nuevas y las 6 tablas nuevas, RLS y triggers, seed con los 6 proyectos reales |
-| `03` | Proyectos ampliado | Pulso, próximo paso y bloqueante en la ficha; la lista muestra el pulso de un vistazo. **Acá ya sirve para algo.** |
-| `04` | Tablero | Kanban del sprint activo, arrastrar y soltar, alta y edición rápida de tareas |
-| `05` | Hoy | Nueva pantalla de entrada: sugerencias, trabado, a medias, para testear |
-| `06` | QA | Cola de testeo, casos, correr un caso, cargar bug, reverificar |
-| `07` | Bitácora | Entrada rápida del día, historial por proyecto, buscador |
-| `08` | Métricas | Velocidad, tiempo de tarea, bugs por entrega, tiempo por proyecto |
-| `09` | Pulido | Atajos de teclado, buscador global, PWA para el celular, exportar respaldo en JSON |
-| `10` | Automático | Traer commits e issues de GitHub, aviso de proyecto dormido, resumen semanal |
+| `03` | Menú e Inicio | Barra lateral (Trabajo / Plata), una dirección por vista, e Inicio como pantalla de entrada con los bloques 1, 3, 4 y 5 (números generales, plata del mes, gastos que se repiten, ideas). Los proyectos abiertos se ven con pulso y próximo paso; la barra de avance llega con el Tablero |
+| `04` | Proyectos ampliado | Pulso, próximo paso y bloqueante en la ficha; la lista muestra el pulso de un vistazo. **Acá ya sirve para algo.** |
+| `05` | Tablero | Kanban del sprint activo, arrastrar y soltar, alta y edición rápida de tareas. Suma en Inicio la barra de avance de cada proyecto (bloque 2) |
+| `06` | Qué agarro hoy | El bloque 6 de Inicio: sugerencias, trabado, a medias, para testear (antes era la pestaña "Hoy") |
+| `07` | QA | Cola de testeo, casos, correr un caso, cargar bug, reverificar |
+| `08` | Bitácora | Entrada rápida del día, historial por proyecto, buscador |
+| `09` | Métricas | Velocidad, tiempo de tarea, bugs por entrega, tiempo por proyecto |
+| `10` | Pulido | Atajos de teclado, buscador global, PWA para el celular, exportar respaldo en JSON, botón "Guardar en Drive" para el Excel |
+| `11` | Automático | Traer commits e issues de GitHub, aviso de proyecto dormido, resumen semanal |
 
-**Primer corte usable: sprint 03.** Si después de ese no lo abrís todos los días, hay algo mal
+El 14/9/2026 se sumó el sprint 03 (Menú e Inicio) y los que venían después corrieron un número.
+
+**Primer corte usable: sprint 04.** Si después de ese no lo abrís todos los días, hay algo mal
 en el diseño y conviene parar antes de seguir construyendo.
 
-Sprints 00–05: unas 3 semanas part-time. Hasta el 08: 5 a 7 semanas. El 09 y el 10 son para
+Sprints 00–06: unas 3 a 4 semanas part-time. Hasta el 09: 5 a 7 semanas. El 10 y el 11 son para
 cuando ya lo estés usando.
 
 ## 8. Cómo hacerlo con Claude Code
@@ -250,7 +287,7 @@ cuando ya lo estés usando.
 2. **`CLAUDE.md` lleva:** el stack, la paleta Dev Blueprint, el modelo de datos de este
    roadmap, y la regla de que no se inventan campos ni tablas que no estén acá — si falta
    algo, primero se agrega al roadmap.
-3. **Una sesión = un sprint = una rama.** `sprint-04-tablero`, y merge cuando está publicado.
+3. **Una sesión = un sprint = una rama.** `sprint-05-tablero`, y merge cuando está publicado.
 4. **Arrancá cada sesión en plan mode.** Le pasás el sprint del roadmap, te devuelve el plan,
    vos lo corregís, recién ahí escribe código.
 5. **Los casos de prueba los escribís vos antes.** Sos QA: cada sprint arranca con la lista de
@@ -282,7 +319,11 @@ Prompt de arranque de cada sprint:
 
 - **Precio de las clases:** la lista de precios y la landing no dicen lo mismo. Unificar antes de
   seguir mandando propuestas.
-- Si querés que el board traiga commits e issues de GitHub solo (sprint 10).
+- Si querés que el board traiga commits e issues de GitHub solo (sprint 11).
+- **"¿Me conviene suscribirme a algo más?" en Inicio:** falta definir qué pregunta contesta.
+  (a) Tus gastos fijos: qué herramientas pagás todos los meses, cuánto se llevan y si alguna no la
+  usás. (b) Tus clientes: a quién le conviene pasar a un abono en vez de pagar cada trabajo suelto.
+  (c) Las dos. Se decide antes del sprint 03.
 - Si querés aviso por WhatsApp o mail del resumen semanal, o te alcanza con abrirlo.
 - Si el `BASE-CONOCIMIENTO.md` de los otros cinco proyectos se escribe de una o a medida que
   vas tocando cada uno.

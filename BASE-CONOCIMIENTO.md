@@ -255,6 +255,7 @@ no existen.
 | 14/9/2026 | Contraseñas en Bitwarden; esta base dice dónde, nunca cuál | Repo público: un archivo con contraseñas es un incendio esperando. |
 | 14/9/2026 | `app.js` partido en módulos: una pestaña por archivo en `vistas/`, lo común aparte | Con 70 KB en un archivo no se podían sumar las seis pestañas del board. Sin cambiar nada de lo que hace. |
 | 14/9/2026 | Tests de Playwright contra el Supabase de producción, con un usuario de prueba | Sin base aparte que mantener. RLS aísla al usuario de prueba; el prefijo `QA · ` y la traba del arranque evitan borrar datos reales. |
+| 14/9/2026 | El panel pasa a barra lateral (Trabajo / Plata), con una dirección por vista e Inicio como pantalla de entrada (sprint 03) | Con diez vistas las pestañas no entran y el panel se parecía a la landing. Inicio absorbe "Hoy". Detalle en el roadmap, secciones 4, 5 y 7. |
 | 14/9/2026 | `supabase-js` fijado en 2.116.0 | Con `@2` podía cambiar solo cualquier día. Es la versión que `@2` bajaba ese día: no cambia nada. |
 
 ## 8. Pendientes conocidos

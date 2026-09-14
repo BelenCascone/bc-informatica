@@ -41,7 +41,9 @@ Tipografías: Space Grotesk (títulos, `--f-display`), JetBrains Mono (etiquetas
 `.kpi`, `.badge`, `.pill`, `.btn`, `.btn--primary`, `.btn--ghost`, `.icon-btn`, `.modal`,
 `.field`, `.avisos`) antes de crear otras. Los títulos de panel van con `// ` adelante.
 
-Tablero y QA se diseñan para escritorio; Hoy, Proyectos y Métricas tienen que leerse bien en el celular.
+La navegación es una barra lateral con dos grupos (Trabajo / Plata) y cada vista tiene su dirección
+(`/panel#/inicio`); desde el sprint 03, ver roadmap sección 4. Tablero y QA se diseñan para
+escritorio; Inicio, Proyectos y Métricas tienen que leerse bien en el celular.
 
 ## Modelo de datos
 
@@ -67,7 +69,7 @@ Tablero y QA se diseñan para escritorio; Hoy, Proyectos y Métricas tienen que 
 
 ## Forma de trabajo
 
-- **Una sesión = un sprint = una rama:** `sprint-NN-nombre` (ej. `sprint-04-tablero`). Merge
+- **Una sesión = un sprint = una rama:** `sprint-NN-nombre` (ej. `sprint-05-tablero`). Merge
   cuando está publicado.
 - Cada sprint arranca con los casos de prueba que escribe Belén en `docs/casos/sprint-NN.md`; los
   marcados "Auto" se convierten en tests de Playwright. Los tests corren con el **usuario de
