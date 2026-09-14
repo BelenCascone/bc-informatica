@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__951793f9-1b19-43ee-a2e0-3a67e430e19d__apply_migration",
+      "mcp__951793f9-1b19-43ee-a2e0-3a67e430e19d__list_migrations",
+      "mcp__951793f9-1b19-43ee-a2e0-3a67e430e19d__get_advisors"
+    ]
+  }
+}
