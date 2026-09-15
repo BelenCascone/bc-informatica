@@ -305,10 +305,9 @@ está en el roadmap, sección 6.
 
 ## 8. Pendientes conocidos
 
-- **Cierre del sprint 02:** faltan los casos manuales (MIG-03, JSN-04, EST-08, EST-09; lista en
-  [`docs/casos/sprint-02.md`](docs/casos/sprint-02.md)).
 - **El respaldo JSON no tiene tiempo límite:** si Supabase no contesta un pedido, el botón queda en
-  "Armando el respaldo…" y no avisa nada. Se vio una vez en los tests (JSN-02).
+  "Armando el respaldo…" y no avisa nada. Se vio una vez en los tests (JSN-02). Se arregla en el
+  sprint 03.
 - **Errores confirmados en la corrida de base del sprint 01** (detalle en
   [`docs/casos/sprint-01.md`](docs/casos/sprint-01.md)). Hay que decidir cuándo se arreglan; los
   tests están marcados "así anda hoy" y avisan cuando cambie:

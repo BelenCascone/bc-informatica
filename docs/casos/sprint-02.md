@@ -152,11 +152,17 @@ triggers, permisos, funciones y filas.
 | DAT-02 | **Pasa.** El proyecto que ya estaba quedó con pulso `andando`, tipo `cliente`, sin repo ni dirección de producción y con `ultimo_movimiento` |
 | DAT-08 | **Pasa.** La fecha por defecto de `journal` es `(now() at time zone 'America/Argentina/Buenos_Aires')::date`, no `current_date` |
 | SEG-01 | **Pasa.** Las 7 tablas con RLS. Advisors: ninguna alerta nueva; queda solo la de contraseñas filtradas, que ya estaba |
-| MIG-03 | El historial de Supabase trae `001_proyectos_y_movimientos`, `002_precios`, `003_presupuestos_pdf` y `004_board`, en ese orden (visto por la API). Falta que Belén lo vea en la pantalla |
+| MIG-03 | El historial de Supabase trae `001_proyectos_y_movimientos`, `002_precios`, `003_presupuestos_pdf` y `004_board`, en ese orden (visto por la API). Belén también lo vio en la pantalla (ver abajo) |
 
-### Falta (manuales)
+### Manuales
 
-- MIG-03: Supabase → Database → Migrations, ver los cuatro en orden.
-- JSN-04: abrir el respaldo en el Bloc de notas.
-- EST-08: el PR #10 ya se publicó, así que se corre en producción en vez de la dirección de prueba.
-- EST-09: descargar el respaldo desde el celular.
+Los corrió Belén el 14/9/2026. Pasaron todos.
+
+| ID | Dónde | Resultado |
+|---|---|---|
+| MIG-03 | Supabase → Database → Migrations | **Pasa.** Los cuatro, en orden |
+| JSN-04 | El respaldo abierto en el Bloc de notas | **Pasa** |
+| EST-08 | Producción (el PR #10 ya estaba publicado, así que no se corrió en la dirección de prueba) | **Pasa** |
+| EST-09 | Celular, en producción | **Pasa** |
+
+Con esto el sprint 02 queda cerrado.

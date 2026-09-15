@@ -8,10 +8,10 @@ Board de trabajo personal de BC Informática: una sola usuaria (Belén), todos l
 abiertos en un lugar, con mirada de desarrolladora **y** de QA manual. No es un ClickUp
 genérico: es el panel que le falta a ella.
 
-**Estado:** sprint 02 (datos) publicado el 14/9/2026 (PR #10): los cuatro `.sql` numerados y en el
-historial de Supabase, las 7 tablas del board con RLS y triggers, y el respaldo en JSON. Suite de
-105 tests de Playwright. Faltan los casos manuales y usarlo un día real. **Próximo:** sprint 03 (barra
-lateral e Inicio).
+**Estado:** sprint 02 (datos) cerrado el 14/9/2026: publicado (PR #10), con los cuatro `.sql`
+numerados y en el historial de Supabase, las 7 tablas del board con RLS y triggers, el respaldo en
+JSON, 105 tests de Playwright y los casos manuales corridos. **Próximo:** sprint 03 (barra lateral e
+Inicio).
 **Se construye con:** Claude Code, un sprint por sesión.
 
 -----
