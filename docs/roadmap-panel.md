@@ -10,8 +10,8 @@ genérico: es el panel que le falta a ella.
 
 **Estado:** sprint 02 (datos) cerrado el 14/9/2026: publicado (PR #10), con los cuatro `.sql`
 numerados y en el historial de Supabase, las 7 tablas del board con RLS y triggers, el respaldo en
-JSON, 105 tests de Playwright y los casos manuales corridos. **Próximo:** sprint 03 (barra lateral e
-Inicio).
+JSON, 105 tests de Playwright y los casos manuales corridos. **En curso:** sprint 03 (barra lateral e
+Inicio), rama `sprint-03-menu-inicio`; casos en borrador en `docs/casos/sprint-03.md`.
 **Se construye con:** Claude Code, un sprint por sesión.
 
 -----
@@ -151,6 +151,9 @@ Si un proyecto no está en esta tabla, no existe para el board.
   en la compu y en el celular se abre con un botón de menú. Dos grupos:
   - **Trabajo:** Inicio · Proyectos · Tablero · QA · Bitácora · Métricas
   - **Plata:** Resumen · Movimientos · Precios
+
+  Las vistas que todavía no existen se ven apagadas, con el sprint en que llegan (decidido el
+  14/9/2026).
 - **Cada vista tiene su dirección** (`/panel#/inicio`, `/panel#/tablero`…), como la landing: se
   puede guardar de favorito, compartir con vos misma en el celular y el botón "atrás" funciona.
 - **Inicio es la pantalla de entrada** y absorbe lo que iba a ser la pestaña "Hoy" (ver abajo).
@@ -192,8 +195,9 @@ tareas".
    - **Margen libre:** el promedio de ingresos de los últimos 3 meses menos los gastos fijos. Es la
      respuesta a "¿me entra una suscripción más?": si el margen es chico o negativo, el panel lo dice.
    - **"¿La seguís usando?":** el panel no sabe cuánto usás cada herramienta, así que la lista de
-     gastos fijos lo pregunta para que lo revises vos. Guardar la respuesta necesitaría un campo
-     nuevo: si hace falta, se agrega al modelo en el sprint 03.
+     gastos fijos lo pregunta para que lo revises vos. En el sprint 03 solo se pregunta, sin guardar
+     la respuesta (decidido el 14/9/2026): guardarla necesitaría un campo nuevo, que primero se
+     agrega al modelo.
 5. **Ideas para mejorar.** Avisos automáticos, como los de precios: precios para ajustar (ya
    existen), proyectos dormidos, presupuestos enviados hace más de una semana sin respuesta,
    cobros pendientes, sprint atrasado, un mes con más egresos que ingresos.
